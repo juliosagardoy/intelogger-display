@@ -22,6 +22,7 @@
 #define _8 0b01000000;
 #define _9 0b01000100;
 #define _err 0b00110000;
+#define _dp 0b10111111;
 
 /**
  * Sends char to designed 7-segment position
@@ -72,35 +73,38 @@ Display_Encode(const char *n)
 {
     switch (*n)
     {
-    case 0:
+    case '0':
         LATC = _0;
         break;
-    case 1:
+    case '1':
         LATC = _1;
         break;
-    case 2:
+    case '2':
         LATC = _2;
         break;
-    case 3:
+    case '3':
         LATC = _3;
         break;
-    case 4:
+    case '4':
         LATC = _4;
         break;
-    case 5:
+    case '5':
         LATC = _5;
         break;
-    case 6:
+    case '6':
         LATC = _6;
         break;
-    case 7:
+    case '7':
         LATC = _7;
         break;
-    case 8:
+    case '8':
         LATC = _8;
         break;
-    case 9:
+    case '9':
         LATC = _9;
+        break;
+    case '.':
+        LATC = _dp;
         break;
     default:
         LATC = _err;

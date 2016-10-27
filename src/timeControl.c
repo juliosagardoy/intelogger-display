@@ -20,7 +20,6 @@ time_t uptime_s; /* time_t in seconds, from time.h */
  */
 void
 init_tmr6() {
-    //tp = &tt;
     tmr6_ovf = 0x00;
     time_200ms = 0x00;
     uptime_s = 0x00;
