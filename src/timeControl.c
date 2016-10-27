@@ -5,10 +5,10 @@
 
 #include "timeControl.h"
 
-
-byte tmr6_ovf; /* Counter for Timer6 overflow */
-byte time_200ms; /* Counter for 200 ms periods */
-time_t uptime_s; /* time_t in seconds, from time.h */
+static byte tmr6_ovf; /* Counter for Timer6 overflow */
+static byte time_200ms; /* Counter for 200 ms periods */
+static time_t uptime_s; /* time_t in seconds, from time.h */
+static byte disp_slectd;
 
 //struct tm tt = {0};	/* Time struct from time.h */
 //struct tm* tp;	/* Handle to Time struct */
@@ -19,11 +19,12 @@ time_t uptime_s; /* time_t in seconds, from time.h */
  * Fcy=4MHz
  */
 void
-init_tmr6() {
-    //tp = &tt;
+init_tmr6()
+{
     tmr6_ovf = 0x00;
     time_200ms = 0x00;
     uptime_s = 0x00;
+    disp_slectd = 0x00;
     /* Configure overflow: Tcy=250ns * 64 * 16 = 256us per tick */
     T6CONbits.T6CKPS = 0b11; // Prescaler @ 1:64
     T6CONbits.T6OUTPS = 0b1111; // Postscaler @ 1:16
@@ -36,7 +37,8 @@ init_tmr6() {
  * Init timer4 for CCP4 module (PWM)
  */
 void
-init_tmr4() {
+init_tmr4()
+{
     /* Configure overflow: Tcy=250ns * 64 * 16 = 256us/tick 
      * 256us/tick * 256 = 65 ms to overflow
      */
@@ -50,7 +52,8 @@ init_tmr4() {
  * 50Hz min (20 ms period): 256/65ms*20ms=78
  */
 void
-init_ccp() {
+init_ccp()
+{
     CCPTMRS0bits.C4TSEL = 0b01; /* CCP4 is based off Timer4 in PWM mode */
     PR4 = 80; /* PWM Period initial, equal to 50Hz*/
     /* Set duty cycle 50% */
@@ -64,7 +67,8 @@ init_ccp() {
  * This has to be called after each interrupt.
  */
 inline void
-reset_tmr6() {
+reset_tmr6()
+{
     TMR6 = 6;
     tmr6_ovf = 0x00;
 }
@@ -72,14 +76,16 @@ reset_tmr6() {
 /** Handle to uptime_s for time.h gmtime-type methods
  * @return pointer to uptime_s
  */
-const time_t *get_uptime(void) {
+const time_t *get_uptime(void)
+{
     return &uptime_s;
 }
 
 /** Increase uptime by s seconds
- *  @arg The number of seconds to be increased
+ *  @arg s seconds to be increased
  */
-void inc_uptime(time_t s) {
+void inc_uptime(time_t s)
+{
     uptime_s += s;
 }
 
@@ -87,7 +93,8 @@ void inc_uptime(time_t s) {
  * Reduces brightness by one step. Wrap-around.
  * @return Current PR4 value
  */
-byte Increase_Brightess(void) {
+byte Increase_Brightess(void)
+{
     if (PR4 < 80)
         PR4 += 20;
     else
@@ -96,12 +103,38 @@ byte Increase_Brightess(void) {
 }
 
 /**
+ * Return current value of the counter from 0 to 3 running every Timer6 irq
+ * @return 
+ */
+byte get_ctr2four_val()
+{
+    return disp_slectd;
+}
+
+/**
+ * Increase value of the counter from 0 to 3 running every Timer6 irq
+ */
+void inc_ctr2four_val()
+{
+    if (disp_slectd < 4)
+        disp_slectd++;
+    else
+        disp_slectd = 0;
+}
+
+/**
  * Timer6 interruption routine
  * Occurs every 250*250ns*16*10 = 10ms
  * OLD--- Count to 100. 10ms * 100 = 1s. Then increase 1s, 1m or 1h.
  * Count to 25. 10ms * 20 = 200ms. Then increase 1m or 1h.
  */
-void TMR6_ISR() {
+void TMR6_ISR()
+{
+    /* Display will refresh with this timer running at 100Hz.
+     * ctr2four increases a value of 1,
+     * main code will do the rest when back from interrupt */
+    inc_ctr2four_val();  
+    /* Now continue with clock clocking */
     if (++tmr6_ovf >= 20) // 200ms have passed
     {
         reset_tmr6();
@@ -116,7 +149,8 @@ void TMR6_ISR() {
 /**
  *
  */
-void CCP4_ISR() {
+void CCP4_ISR()
+{
     PIR3bits.CCP4IF = 0;
 
 }

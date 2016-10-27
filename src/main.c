@@ -67,7 +67,7 @@ void main(void) {
     };
     init_osc();
     init_mcu();
-    init_tmr6(); // Initialize timer with interrupt every 200ms
+    init_tmr6(); // Initialize timer with interrupt every 10ms (100Hz))
     init_ccp();
 
     INTERRUPT_GlobalInterruptEnable();
@@ -96,11 +96,23 @@ void main(void) {
         else
             itoa(c_hour, tp->tm_hour, 10);
         /* END of DIRTY */    
-        
-        Display_Show(hourH, &c_hour[0]);
-        Display_Show(hourL, &c_hour[1]);
-        Display_Show(minH, &c_min[0]);
-        Display_Show(minL, &c_min[1]);
+
+#ifndef SIM_ON
+        if(get_ctr2four_val() == hourH)
+#endif
+            Display_Show(hourH, &c_hour[0]);
+#ifndef SIM_ON
+        else if(get_ctr2four_val() == hourL)
+#endif
+            Display_Show(hourL, &c_hour[1]);
+#ifndef SIM_ON
+        else if(get_ctr2four_val() == minH)
+#endif
+            Display_Show(minH, &c_min[0]);
+#ifndef SIM_ON
+        else
+#endif
+            Display_Show(minL, &c_min[1]);
     }
 
     INTERRUPT_PeripheralInterruptDisable();
