@@ -19,8 +19,12 @@ static byte disp_slectd;
  * Fcy=4MHz
  */
 void
+<<<<<<< HEAD
 init_tmr6()
 {
+=======
+init_tmr6() {
+>>>>>>> origin/master
     tmr6_ovf = 0x00;
     time_200ms = 0x00;
     uptime_s = 0x00;
