@@ -2,13 +2,23 @@
  * timer.c
  *
  */
+#include <stdlib.h>
 
 #include "timeControl.h"
+#include "display.h"
 
 static byte tmr6_ovf; /* Counter for Timer6 overflow */
 static byte time_200ms; /* Counter for 200 ms periods */
 static time_t uptime_s; /* time_t in seconds, from time.h */
-static byte disp_slectd;
+static byte active_digit;
+
+static char c_min[2] = {'0', '0'};
+static char c_hour[2] = {'0', '0'};
+
+enum
+{
+    hourH, hourL, minH, minL
+};
 
 //struct tm tt = {0};	/* Time struct from time.h */
 //struct tm* tp;	/* Handle to Time struct */
@@ -19,21 +29,18 @@ static byte disp_slectd;
  * Fcy=4MHz
  */
 void
-<<<<<<< HEAD
 init_tmr6()
 {
-=======
-init_tmr6() {
->>>>>>> origin/master
     tmr6_ovf = 0x00;
     time_200ms = 0x00;
     uptime_s = 0x00;
-    disp_slectd = 0x00;
+    active_digit = 0;
+
     /* Configure overflow: Tcy=250ns * 64 * 16 = 256us per tick */
     T6CONbits.T6CKPS = 0b11; // Prescaler @ 1:64
     T6CONbits.T6OUTPS = 0b1111; // Postscaler @ 1:16
     TMR6 = 6; // Preload at 6, then irq ea. 250*250us*16*10 = 10ms
-    PIE3bits.TMR6IE == 1;
+    PIE3bits.TMR6IE = 1;
     T6CONbits.TMR6ON = 1;
 }
 
@@ -52,7 +59,7 @@ init_tmr4()
 }
 
 /**
- * Init CCP4 module to PWM
+ * Init CCP4 module for PWM
  * 50Hz min (20 ms period): 256/65ms*20ms=78
  */
 void
@@ -88,7 +95,7 @@ const time_t *get_uptime(void)
 /** Increase uptime by s seconds
  *  @arg s seconds to be increased
  */
-void inc_uptime(time_t s)
+void incr_uptime(time_t s)
 {
     uptime_s += s;
 }
@@ -99,11 +106,11 @@ void inc_uptime(time_t s)
  */
 byte Increase_Brightess(void)
 {
-    if (PR4 < 80)
-        PR4 += 20;
-    else
-        PR4 = 0;
-    return PR4;
+    //    if (PR4 < 80)
+    //        PR4 += 20;
+    //    else
+    //        PR4 = 0;
+    //    return PR4;
 }
 
 /**
@@ -112,18 +119,19 @@ byte Increase_Brightess(void)
  */
 byte get_ctr2four_val()
 {
-    return disp_slectd;
+    return active_digit;
 }
 
 /**
- * Increase value of the counter from 0 to 3 running every Timer6 irq
+ * Counter 0,1,2,3,then-wrap-around; used for digit selection.
+ * Calling it increase value of active_digit
  */
-void inc_ctr2four_val()
+void incr_active_digit()
 {
-    if (disp_slectd < 4)
-        disp_slectd++;
+    if (active_digit < 4)
+        active_digit++;
     else
-        disp_slectd = 0;
+        active_digit = 0;
 }
 
 /**
@@ -135,16 +143,56 @@ void inc_ctr2four_val()
 void TMR6_ISR()
 {
     /* Display will refresh with this timer running at 100Hz.
-     * ctr2four increases a value of 1,
-     * main code will do the rest when back from interrupt */
-    inc_ctr2four_val();  
-    /* Now continue with clock clocking */
-    if (++tmr6_ovf >= 20) // 200ms have passed
+     */
+
+#ifndef SIM_ON
+    if (get_ctr2four_val() == hourH)
+#endif
+        Display_Show(1, &c_hour[0]);
+#ifndef SIM_ON
+    else if (get_ctr2four_val() == hourL)
+#endif
+        Display_Show(2, &c_hour[1]);
+#ifndef SIM_ON
+    else if (get_ctr2four_val() == minH)
+#endif
+        Display_Show(3, &c_min[0]);
+#ifndef SIM_ON
+    else
+#endif
+        Display_Show(4, &c_min[1]);
+
+    incr_active_digit();
+
+    /* Continue with clock clocking */
+    if (tmr6_ovf++ >= 20) // 200ms have passed
     {
         reset_tmr6();
-        if (++time_200ms >= 5) // 200ms * 5  = 1 s
+        if (time_200ms++ >= 5) // 200ms * 5  = 1 s
         {
-            uptime_s++; // Increase one second
+            uptime_s++; // Increase clock by one second
+
+            tp = gmtime(get_uptime());
+
+            /* DIRTY Workaround to fix itoa output when number is only one cypher. */
+            if (tp->tm_min < 10)
+            {
+                itoa(c_min, tp->tm_min, 10);
+                c_min[1] = c_min[0];
+                c_min[0] = '0';
+            }
+            else
+                itoa(c_min, tp->tm_min, 10);
+
+            if (tp->tm_hour < 10)
+            {
+                itoa(c_hour, tp->tm_hour, 10);
+                c_hour[1] = c_min[0];
+                c_hour[0] = '0';
+            }
+            else
+                itoa(c_hour, tp->tm_hour, 10);
+            /* END of DIRTY */
         }
     }
     PIR3bits.TMR6IF = 0;

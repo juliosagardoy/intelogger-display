@@ -18,10 +18,10 @@ void init_tmr6(void);
 void init_ccp(void);
 inline void reset_tmr6(void);
 const time_t *get_uptime(void);
-void inc_uptime(time_t);
+void incr_uptime(time_t);
 byte Increase_Brightess(void);
 byte get_ctr2four_val(void);
-void inc_ctr2four_val(void);
+void incr_active_digit(void);
 void TMR6_ISR(void);
 void CCP4_ISR(void);
 

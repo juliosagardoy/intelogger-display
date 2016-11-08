@@ -24,7 +24,7 @@ void SW1_ISR()	/* "H" sw pushed */
 	if(!PORTBbits.RB3)
 		Increase_Brightess();
 	else
-		inc_uptime(3600);	/* Increase time an hour */
+		incr_uptime(3600);	/* Increase time an hour */
 		
 	/* Reenable other sw interrupts */
 	IOCBNbits.IOCBN2 = 1;
@@ -38,7 +38,7 @@ void SW2_ISR()	/* "M" sw pushed */
 	/* When "M" is pushed,t emporarily disable interrupts from the other sw */
 	IOCBNbits.IOCBN1 = 0;
 	IOCBNbits.IOCBN3 = 0;
-	inc_uptime(60);		/* Increase time a minute */
+	incr_uptime(60);		/* Increase time a minute */
 	/* Reenable other sw interrupts */
 	IOCBNbits.IOCBN1 = 1;
 	IOCBNbits.IOCBN3 = 1;
