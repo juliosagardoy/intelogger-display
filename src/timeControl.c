@@ -65,12 +65,14 @@ init_tmr4()
 void
 init_ccp()
 {
+    TRISBbits.TRISB0 = 1;
     CCPTMRS0bits.C4TSEL = 0b01; /* CCP4 is based off Timer4 in PWM mode */
     PR4 = 80; /* PWM Period initial, equal to 50Hz*/
     /* Set duty cycle 50% */
     CCP4CON = 0b00111100; /* Select PWM mode and duty cycle 2-MSb */
     CCPR4L = 0x7F; /* duty cycle 8-MSb */
     init_tmr4();
+    TRISBbits.TRISB0 = 0;
 }
 
 /**
