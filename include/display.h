@@ -12,8 +12,8 @@
 extern "C" {
 #endif
 
-void Display_Encode(const char*);
-void Display_Show(byte, const char*);
+    void Display_encode(const char*);
+    void display_digit(byte, const char*);
 
 #ifdef	__cplusplus
 }

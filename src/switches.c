@@ -11,8 +11,8 @@ void
 sw_Enable_IOC()
 {
 	IOCBNbits.IOCBN1 = 1; /* Enable interrupt-on-change negative edge */
-	IOCBNbits.IOCBN2 = 1; /* Enable interrupt-on-change negative edge */
-	IOCBNbits.IOCBN3 = 1; /* Disable interrupt-on-change negative edge */
+	IOCBNbits.IOCBN2 = 1;
+	IOCBNbits.IOCBN3 = 1;
 }
 	
 void SW1_ISR()	/* "H" sw pushed */
@@ -22,7 +22,7 @@ void SW1_ISR()	/* "H" sw pushed */
 	IOCBNbits.IOCBN3 = 0;
 	/* Check if "R" is also pushed, meaning "change brightness" */
 	if(!PORTBbits.RB3)
-		Increase_Brightess();
+		Toggle_Brightess();
 	else
 		incr_uptime(3600);	/* Increase time an hour */
 		

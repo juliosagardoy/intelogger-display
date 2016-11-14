@@ -25,12 +25,12 @@
 #define _dp 0b10111111;
 
 /**
- * Sends char to designed 7-segment position
- * @arg MUX channel
+ * Sends char n to designed 7-segment digit ch
+ * @arg MUX channel, see enum
  * @arg char
  */
 void
-Display_Show(byte ch, const char *n)
+display_digit(byte ch, const char *n)
 {
     /* MUX channel assign 
      * B    A   Channel
@@ -60,7 +60,7 @@ Display_Show(byte ch, const char *n)
         LATBbits.LATB5 = 1;
         break;
     }
-    Display_Encode(n);
+    Display_encode(n);
 }
 
 /**
@@ -69,7 +69,7 @@ Display_Show(byte ch, const char *n)
  * @param n ASCII char. Only admits numbers, otherwise E. will be put
  */
 void
-Display_Encode(const char *n)
+Display_encode(const char *n)
 {
     switch (*n)
     {

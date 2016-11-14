@@ -38,13 +38,11 @@
 typedef uint8_t     byte;
 typedef uint16_t    word;
 
-/*--------------------------------------------------------------------------------------------------
-                                         Prototypes
---------------------------------------------------------------------------------------------------*/
-//inline void activityIndicatorOff( void );
-//inline void activityIndicatorOn( void );     //Indicates that IEBus packets are being processed
-//inline void usartIndicatorOff(void);
-//inline void usartIndicatorOn(void);            //Indicates that spi communication is being used
+
+volatile byte mode = 1; /* Display mode: 1-clock 2-speed*/
+char gps_heading[5];
+char gps_speed[4];
+
 
 #endif	/* GLOBALS_H */
 
