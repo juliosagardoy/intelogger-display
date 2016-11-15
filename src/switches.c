@@ -7,14 +7,6 @@
 
 #include "timeControl.h"
 
-void
-sw_Enable_IOC()
-{
-	IOCBNbits.IOCBN1 = 1; /* Enable interrupt-on-change negative edge */
-	IOCBNbits.IOCBN2 = 1;
-	IOCBNbits.IOCBN3 = 1;
-}
-	
 void SW1_ISR()	/* "H" sw pushed */
 {
 	/* When "H" is pushed, temporarily disable interrupts from the other sw */
