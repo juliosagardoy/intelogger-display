@@ -38,10 +38,10 @@
 typedef uint8_t     byte;
 typedef uint16_t    word;
 
-
 volatile byte mode = 1; /* Display mode: 1-clock 2-speed*/
-char gps_heading[5];
 char gps_speed[4];
+char gps_utc[6];
+byte gps_fix;
 
 
 #endif	/* GLOBALS_H */

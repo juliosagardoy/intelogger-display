@@ -26,7 +26,9 @@ void init_eusart()
     // Baud Rate = 115200; SPBRGL 34;
     //SPBRGL = 0x22;
     // Baud Rate = 57600; SPBRGL 16;
-    SPBRGL = 16;
+    //SPBRGL = 16;
+    // Baud Rate = 19200; SPBRGL 51;
+    SPBRGL = 51;
     
     // Baud Rate = 115200; SPBRGH 0;
     SPBRGH = 0x00;
