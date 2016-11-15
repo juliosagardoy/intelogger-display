@@ -50,15 +50,16 @@ init_mcu() {
     ANSELBbits.ANSB5 = 0; // Select GPIO
 
     /* Switch inputs */
+    OPTION_REGbits.nWPUEN = 0; /* Enable individual weak pull-ups */
     TRISBbits.TRISB1 = 1;
     TRISBbits.TRISB2 = 1;
     TRISBbits.TRISB3 = 1;
     ANSELBbits.ANSB1 = 0; // Select GPIO
     ANSELBbits.ANSB2 = 0; // Select GPIO
-    ANSELBbits.ANSB3 = 0; // Select GPIO
-    //    sw_Enable_IOC();
-
-    // Pull-ups already enabled by default
+    ANSELBbits.ANSB3 = 0; // Select GPIO  
+    IOCBNbits.IOCBN1 = 1; /* Enable interrupt-on-change negative edge */
+    IOCBNbits.IOCBN2 = 1;
+    IOCBNbits.IOCBN3 = 1;
 }
 
 void main(void) {
@@ -71,7 +72,10 @@ void main(void) {
 
     INTERRUPT_GlobalInterruptEnable();
     INTERRUPT_PeripheralInterruptEnable();
-
+    
+    memset(gps_heading, NULL, 5);
+    memset(gps_speed, NULL, 4);
+    
     while (1) {
 #ifdef SIM_ON
         TMR6_ISR();
@@ -97,16 +101,16 @@ void main(void) {
                 while (EUSART_Read_1Byte() != ',')
                     gps_heading[i++];
 
-                /* Discard X parameters by counting commas */
+                /* Discard uninteresting X parameters by counting commas */
                 do {
                     if (EUSART_Read_1Byte() == ',')
                         c++;
                 } while (c < 5);
 
-                /* Read speed. Discard at decimal separator '.' */
+                /* Read speed (km/h) param. Discard at decimal separator '.' */
                 i = 0;
                 while (EUSART_Read_1Byte() != '.')
-                    gps_speed[i];
+                    gps_speed[i++];
             }
         }
 #endif
