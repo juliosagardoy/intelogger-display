@@ -1,5 +1,5 @@
 #include "irq_manager.h"
-//#include "usart.h"
+#include "usart.h"
 //#include "ccp.h"
 #include "timeControl.h"
 #include "display.h"
