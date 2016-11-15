@@ -24,7 +24,7 @@ init_tmr6() {
     tmr6_ovf = 0x00;
     time_200ms = 0x00;
     uptime_s = 0x00;
-    active_digit = 0;
+    active_digit = 0x01;
 
     /* Configure overflow: Fcy=4MHz; Tcy=250ns * 64 * 16 = 256us per tick */
     T6CONbits.T6CKPS = 0b11; // Prescaler @ 1:64
@@ -84,10 +84,6 @@ byte Toggle_Brightess(void) {
     return CCPR4L;
 }
 
-byte get_active_digit() {
-    return active_digit;
-}
-
 void incr_active_digit() {
     if (active_digit < 4)
         active_digit++;
@@ -99,26 +95,33 @@ void TMR6_ISR() {
     /* Display will refresh with this timer running at 100Hz (T=10ms).
      * Preload at 6 so that irq ea. (2^8-6)*250us*16*10 = 10ms
      */
+    mode = 2;
+    gps_speed[0] = '1';
+    gps_speed[1] = '2';
+    
 
     if (mode == 1) {
-#ifndef SIM_ON
-        if (active_digit == hourH)
-#endif
-            display_digit(hourH, &c_hour[0]);
-#ifndef SIM_ON
-        else if (active_digit == hourL)
-#endif
-            display_digit(hourL, &c_hour[1]);
-#ifndef SIM_ON
-        else if (active_digit == minH)
-#endif
-            display_digit(minH, &c_min[0]);
-#ifndef SIM_ON
+        if (active_digit == 1)
+            display_digit(1, &c_hour[0]);
+
+        else if (active_digit == 2)
+            display_digit(2, &c_hour[1]);
+
+        else if (active_digit == 3)
+            display_digit(3, &c_min[0]);
         else
-#endif
-            display_digit(minL, &c_min[1]);
+            display_digit(4, &c_min[1]);
     } else if (mode == 2) {
-        
+        if (strlen(gps_speed) == 1 && active_digit == 4)
+            display_digit(active_digit, &gps_speed[0]);
+        else if (strlen(gps_speed) == 2 \
+                && (active_digit == 3 || active_digit == 4))
+            display_digit(active_digit, &gps_speed[active_digit - 3]);
+        else if (strlen(gps_speed) == 3 \
+                && (active_digit == 2) || active_digit == 3 || active_digit == 4)
+            display_digit(active_digit, &gps_speed[active_digit - 2]);
+        else
+            display_digit(active_digit, ' ');
     }
     /* At each iteration, switch active digit */
     incr_active_digit();
