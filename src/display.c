@@ -23,6 +23,7 @@
 #define _9 0b01000100;
 #define _err 0b00110000;
 #define _dp 0b10111111;
+#define _null 0b11111111;
 
 /**
  * Sends char n to designed 7-segment digit ch
@@ -60,7 +61,7 @@ display_digit(byte ch, const char *n)
         LATBbits.LATB5 = 1;
         break;
     }
-    Display_encode(n);
+    display_encode(n);
 }
 
 /**
@@ -69,7 +70,7 @@ display_digit(byte ch, const char *n)
  * @param n ASCII char. Only admits numbers, otherwise E. will be put
  */
 void
-Display_encode(const char *n)
+display_encode(const char* n)
 {
     switch (*n)
     {
@@ -106,8 +107,11 @@ Display_encode(const char *n)
     case '.':
         LATC = _dp;
         break;
-    default:
+    case 'e':
         LATC = _err;
+        break;
+    default:
+        LATC = _null;
         break;
     }
 }
