@@ -19,7 +19,7 @@
 static void
 init_osc() {
     OSCCON = 0x68; /* 01101000 PLL OFF,4MHz INTOSC, OSC defined in ConfBytes
-    * OSTS intosc; HFIOFR disabled; HFIOFS not0.5percent_acc; PLLR disabled; 
+    * OSTS intosc; HFIOFR disabled; HFIOFS not0.5percent_acc; PLLR disabled;
     * T1OSCR disabled; MFIOFR disabled; HFIOFL not2percent_acc; LFIOFR disabled;
     * TUN 0x0;
     */
@@ -56,7 +56,7 @@ init_mcu() {
     TRISBbits.TRISB3 = 1;
     ANSELBbits.ANSB1 = 0; // Select GPIO
     ANSELBbits.ANSB2 = 0; // Select GPIO
-    ANSELBbits.ANSB3 = 0; // Select GPIO  
+    ANSELBbits.ANSB3 = 0; // Select GPIO
     IOCBNbits.IOCBN1 = 1; /* Enable interrupt-on-change negative edge */
     IOCBNbits.IOCBN2 = 1;
     IOCBNbits.IOCBN3 = 1;
@@ -72,10 +72,10 @@ void main(void) {
 
     INTERRUPT_GlobalInterruptEnable();
     INTERRUPT_PeripheralInterruptEnable();
-    
+
     memset(gps_heading, NULL, 5);
     memset(gps_speed, NULL, 4);
-    
+
     while (1) {
 #ifdef SIM_ON
         TMR6_ISR();
@@ -90,27 +90,42 @@ void main(void) {
             for (int i = 0; i < 5; i++) {
                 nmea_header[i] == EUSART_Read_1Byte();
             }
-
-            /* Analyze header and extract data */
-            if (strcmp(nmea_header, "GPVTG") == 0) {
-                EUSART_Read_1Byte(); /* Discard ',' */
-
+            if (strcmp(nmea_header, "GPGGA") == 0) {
                 byte i = 0;
                 byte c = 0;
-                /* Read first parameter. EOF is a ',' */
-                while (EUSART_Read_1Byte() != ',')
-                    gps_heading[i++];
-
-                /* Discard uninteresting X parameters by counting commas */
+                EUSART_Read_1Byte(); /* Discard ',' */
+                /* Read next fixed 6 characters: hhmmss */
+                for (i = 0; i < 6; i++)
+                    gps_utc[i] = EUSART_Read_1Byte();
+                /* Discard uninteresting X parameters by counting 5 commas */
                 do {
                     if (EUSART_Read_1Byte() == ',')
                         c++;
                 } while (c < 5);
+                /* Next param is GPS fix valid */
+                if (EUSART_Read_1Byte() == '1')
+                    gps_fix = 1;
+                else
+                    gps_fix = 0;
+            }
+
+            /* Analyze header and extract data */
+            if (strcmp(nmea_header, "GPVTG") == 0) {
+                byte i = 0;
+                byte c = 0;
+                EUSART_Read_1Byte(); /* Discard ',' */
+
+                /* Discard uninteresting X parameters until speed_kmh 
+                 * by counting 7 commas */
+                do {
+                    if (EUSART_Read_1Byte() == ',')
+                        c++;
+                } while (c < 7);
 
                 /* Read speed (km/h) param. Discard at decimal separator '.' */
                 i = 0;
                 while (EUSART_Read_1Byte() != '.')
-                    gps_speed[i++];
+                    gps_speed[i++] = EUSART_Read_1Byte();
             }
         }
 #endif

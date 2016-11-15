@@ -95,10 +95,11 @@ void TMR6_ISR() {
     /* Display will refresh with this timer running at 100Hz (T=10ms).
      * Preload at 6 so that irq ea. (2^8-6)*250us*16*10 = 10ms
      */
+#ifdef SIM_ON
     mode = 2;
     gps_speed[0] = '1';
     gps_speed[1] = '2';
-    
+#endif
 
     if (mode == 1) {
         if (active_digit == 1)
@@ -112,16 +113,21 @@ void TMR6_ISR() {
         else
             display_digit(4, &c_min[1]);
     } else if (mode == 2) {
+        /* Speed display will be aligned to the right of the display.  
+         The following takes the lenght of speed sentence into account */
+        /* Speed between 0 and 9 kmh */
         if (strlen(gps_speed) == 1 && active_digit == 4)
             display_digit(active_digit, &gps_speed[0]);
+        /* Speed between 10 and 99 kmh */
         else if (strlen(gps_speed) == 2 \
                 && (active_digit == 3 || active_digit == 4))
             display_digit(active_digit, &gps_speed[active_digit - 3]);
+        /* Speed between 100 kmh and 999 kmh :) */
         else if (strlen(gps_speed) == 3 \
                 && (active_digit == 2) || active_digit == 3 || active_digit == 4)
             display_digit(active_digit, &gps_speed[active_digit - 2]);
         else
-            display_digit(active_digit, ' ');
+            display_digit(active_digit,"");
     }
     /* At each iteration, switch active digit */
     incr_active_digit();
