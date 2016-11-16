@@ -11,6 +11,7 @@
       <itemPath>include/switches.h</itemPath>
       <itemPath>include/timeControl.h</itemPath>
       <itemPath>include/usart.h</itemPath>
+      <itemPath>include/nmea.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -25,6 +26,7 @@
       <itemPath>src/switches.c</itemPath>
       <itemPath>src/timeControl.c</itemPath>
       <itemPath>src/usart.c</itemPath>
+      <itemPath>src/nmea.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

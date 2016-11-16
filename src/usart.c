@@ -1,8 +1,9 @@
-/**
- * usart.c
- * Ver:    2
- *
-*/
+/* 
+ * File: usart.c  
+ * Author: Julio Sagardoy
+ * Comments: 
+ * Revision history: 2
+ */
 
 #include "usart.h"
 

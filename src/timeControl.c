@@ -1,11 +1,15 @@
-/**
- * timer.c
- *
+/* 
+ * File: timeControl.c 
+ * Author: Julio Sagardoy
+ * Comments: Timers and CCP PWM code
+ * Revision history: 1
  */
+
 #include <stdlib.h>
 
 #include "timeControl.h"
 #include "display.h"
+#include "nmea.h"
 
 static volatile byte tmr6_ovf; /* Counter for Timer6 overflow */
 static volatile byte time_200ms; /* Counter for 200 ms periods */

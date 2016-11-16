@@ -1,12 +1,13 @@
 /* 
- * File:   timer.h
- * Author: julio
- *
- * Created on March 22, 2016, 8:25 AM
+ * File: timeControl.h  
+ * Author: Julio Sagardoy
+ * Comments: Timers and CCP PWM
+ * Revision history: 1
  */
 
 #ifndef TIMER_H
 #define	TIMER_H
+
 #include <time.h>
 #include "Globals.h"
 

@@ -1,8 +1,8 @@
- /* 
- * File:   Globals.h
- * Author: julio
- *
- * Created on February 7, 2015, 9:32 AM
+/* 
+ * File: Globals.h  
+ * Author: Julio Sagardoy
+ * Comments: Globals
+ * Revision history: 1
  */
 
 #ifndef GLOBALS_H
@@ -38,11 +38,10 @@
 typedef uint8_t     byte;
 typedef uint16_t    word;
 
-volatile byte mode = 1; /* Display mode: 1-clock 2-speed*/
-char gps_speed[4];
-char gps_utc[6];
-byte gps_fix;
-
+/**
+ * 
+ */
+volatile byte mode = 1; /* Display mode: 1-clock 2-speed */
 
 #endif	/* GLOBALS_H */
 

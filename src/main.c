@@ -1,12 +1,9 @@
-/*
- * File:   main.c
- * Author: julio
- *
- * Created on 8. Oktober 2016, 14:57
+/* 
+ * File: main.c  
+ * Author: Julio Sagardoy
+ * Comments: 
+ * Revision history: 1
  */
-
-
-//#include <xc.h>//in globals
 
 #include <string.h>
 #include "Globals.h"
@@ -15,6 +12,7 @@
 #include "display.h"
 #include "irq_manager.h"
 #include "usart.h"
+#include "nmea.h"
 
 static void
 init_osc() {
@@ -73,61 +71,15 @@ void main(void) {
     INTERRUPT_GlobalInterruptEnable();
     INTERRUPT_PeripheralInterruptEnable();
 
-    memset(gps_heading, NULL, 5);
     memset(gps_speed, NULL, 4);
-
+    memset(gps_utc, NULL, 4);
+    
     while (1) {
 #ifdef SIM_ON
         TMR6_ISR();
 #endif
 #ifndef SIM_ON
-        /* Refresh GPS */
-        if (EUSART_Read_1Byte() != '$') /* Found GPS start bit */ {
-            /* Read NMEA sentence header (5 chars string) */
-            char nmea_header[5];
-            memset(nmea_header, 0x00, 5);
-
-            for (int i = 0; i < 5; i++) {
-                nmea_header[i] == EUSART_Read_1Byte();
-            }
-            if (strcmp(nmea_header, "GPGGA") == 0) {
-                byte i = 0;
-                byte c = 0;
-                EUSART_Read_1Byte(); /* Discard ',' */
-                /* Read next fixed 6 characters: hhmmss */
-                for (i = 0; i < 6; i++)
-                    gps_utc[i] = EUSART_Read_1Byte();
-                /* Discard uninteresting X parameters by counting 5 commas */
-                do {
-                    if (EUSART_Read_1Byte() == ',')
-                        c++;
-                } while (c < 5);
-                /* Next param is GPS fix valid */
-                if (EUSART_Read_1Byte() == '1')
-                    gps_fix = 1;
-                else
-                    gps_fix = 0;
-            }
-
-            /* Analyze header and extract data */
-            if (strcmp(nmea_header, "GPVTG") == 0) {
-                byte i = 0;
-                byte c = 0;
-                EUSART_Read_1Byte(); /* Discard ',' */
-
-                /* Discard uninteresting X parameters until speed_kmh 
-                 * by counting 7 commas */
-                do {
-                    if (EUSART_Read_1Byte() == ',')
-                        c++;
-                } while (c < 7);
-
-                /* Read speed (km/h) param. Discard at decimal separator '.' */
-                i = 0;
-                while (EUSART_Read_1Byte() != '.')
-                    gps_speed[i++] = EUSART_Read_1Byte();
-            }
-        }
+        nmea_parser();
 #endif
     }
 

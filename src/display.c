@@ -1,7 +1,8 @@
-/**
- * 
- * 
- * 
+/* 
+ * File: display.c
+ * Author: Julio Sagardoy
+ * Comments: 7-segment display controller
+ * Revision history: 1
  */
 
 #include "Globals.h"

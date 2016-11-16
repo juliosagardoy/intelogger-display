@@ -1,8 +1,8 @@
 /* 
- * File:   irq_manager.h
- * Author: julio
- *
- * Created on February 7, 2015, 10:02 AM
+ * File: irq_manager.h  
+ * Author: Julio Sagardoy
+ * Comments: Interruptions
+ * Revision history: 1
  */
 
 #ifndef IRQ_MANAGER_H

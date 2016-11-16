@@ -1,10 +1,9 @@
 /* 
- * File:   configBytes.h
- * Author: julio
- *
- * Created on January 30, 2015, 2:43 PM
+ * File: configBytes.h
+ * Author: Julio Sagardoy
+ * Comments: 
+ * Revision history: 3
  */
-
 
 // PIC16F1938 Configuration Bit Settings
 

@@ -1,8 +1,8 @@
 /* 
- * File:   led_decoder.h
- * Author: julio
- *
- * Created on 9. Oktober 2016, 18:28
+ * File: display.c
+ * Author: Julio Sagardoy
+ * Comments: 7-segment display controller
+ * Revision history: 1
  */
 
 #ifndef LED_DECODER_H

@@ -1,9 +1,8 @@
 /* 
- * File:   usart.h
- * Ver:    2
- * Author: julio
- *
- * Created on February 7, 2015, 9:55 AM
+ * File: usart.c  
+ * Author: Julio Sagardoy
+ * Comments: 
+ * Revision history: 2
  */
 
 #ifndef USART_H
@@ -31,6 +30,7 @@ volatile uint8_t eusartRxTail;
 volatile uint8_t eusartRxBuffer[EUSART_RX_BUFFER_SIZE];
 volatile uint8_t eusartRxCount;
 
+/* USART */
 void init_eusart();
 uint8_t EUSART_Read_1Byte(void);
 uint16_t EUSART_Read_2Bytes(void);
@@ -41,5 +41,8 @@ void EUSART_WriteString(char*);
 void EUSART_PurgeBuffer(void);
 void EUSART_Receive_ISR(void);
 void EUSART_Transmit_ISR(void);
+
+/* I2C */
+
 #endif	/* USART_H */
 

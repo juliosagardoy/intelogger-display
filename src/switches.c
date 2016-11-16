@@ -1,8 +1,8 @@
 /* 
- * File:   switches.c
- * Author: julio
- *
- * Created on 
+ * File: switches.c
+ * Author: Julio Sagardoy
+ * Comments: External switch code
+ * Revision history: 1
  */
 
 #include "timeControl.h"
