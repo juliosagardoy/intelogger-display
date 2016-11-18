@@ -31,7 +31,7 @@ init_mcu() {
     TRISCbits.TRISC6 = 0; // TX
 
     /* I2C interface */
-    // TODO
+    //TODO SET both TRIS as INPUT yes as input
 
     /* 7-SEG ports direction config */
     TRISA = 0x00;
