@@ -24,8 +24,11 @@ inline void INTERRUPT_GlobalInterruptDisable()
 
 inline void INTERRUPT_PeripheralInterruptEnable()
 {
-    INTCONbits.PEIE = 1;
+    IOCBFbits.IOCBF1 = 0;
+    IOCBFbits.IOCBF2 = 0;
+    IOCBFbits.IOCBF3 = 0;
     INTCONbits.IOCIE = 1; /* Interrupt-on-change */
+    INTCONbits.PEIE = 1;   
 }
 
 inline void INTERRUPT_PeripheralInterruptDisable()
@@ -51,7 +54,7 @@ void interrupt INTERRUPT_InterruptManager()
     }
     else if (PIE3bits.CCP4IE == 1 && PIR3bits.CCP4IF == 1)
     {
-        CCP4_ISR();
+       // CCP4_ISR();
     }
     else if (PIE1bits.TMR2IE == 1 && PIR1bits.TMR2IF == 1)
     {
