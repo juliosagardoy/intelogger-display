@@ -113,7 +113,7 @@ void EUSART_Write_2Bytes(word txData)
     EUSART_Write_1Byte((byte)txData << 8);
 }
 
-void EUSART_WriteCString(const char* str)
+void EUSART_WriteCString(const byte* str)
 {
     while ( *str )
     {   
@@ -121,7 +121,7 @@ void EUSART_WriteCString(const char* str)
     }
 }
 
-void EUSART_WriteString(char* str)
+void EUSART_WriteString(byte* str)
 {
     while ( *str )
     {

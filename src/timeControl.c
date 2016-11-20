@@ -11,22 +11,15 @@
 #include "display.h"
 #include "nmea.h"
 
-static volatile byte tmr6_ovf; /* Counter for Timer6 overflow */
-static volatile byte time_200ms; /* Counter for 200 ms periods */
-static time_t uptime_s; /* time_t in seconds, from time.h */
-static volatile byte active_digit; /* Stores below enum 0,1,2,3 active 7-seg digit */
 
-static char c_min[2] = {'0', '0'};
-static char c_hour[2] = {'0', '0'};
+time_t uptime_s; /* time_t in seconds, from time.h */
+volatile byte active_digit; /* Stores below enum 0,1,2,3 active 7-seg digit */
 
-enum {
-    hourH, hourL, minH, minL
-};
+byte c_min[2] = {'0', '0'};
+byte c_hour[2] = {'0', '0'};
 
 void
 init_tmr6() {
-    tmr6_ovf = 0x00;
-    time_200ms = 0x00;
     uptime_s = 0x00;
     active_digit = 0x01;
 
@@ -47,6 +40,8 @@ init_tmr4() {
      * 4us/tick * 256 = 1.024 ms to overflow
      */
     T4CONbits.T4CKPS = 0b11; /* Prescaler @ 1:64 */
+    PIE3bits.TMR4IE = 1;
+    PIR3bits.TMR4IF = 0;
     //  T4CONbits.T4OUTPS = 0b1111; /* Postscaler @ 1:16 */ /* not used on CCP */
     T4CONbits.TMR4ON = 1;
 }
@@ -56,6 +51,7 @@ init_ccp() {
     TRISBbits.TRISB0 = 1;
     CCPTMRS0bits.C4TSEL = 0b01; /* CCP4 is based off Timer4 in PWM mode */
     PR4 = 64; /* PWM Period 100ms = 2^8/(PWMPeriodMAX/TMR4ovflow) = 64*/
+    PR4 = 32;
     /* DC will vary, refresh rate fixed to 100Hz */
     /* DC LSb fixed to 00, we only vary Msb */
     CCP4CON = 0b00110000; /* Select PWM mode and duty cycle 2-MSb */
@@ -66,13 +62,7 @@ init_ccp() {
     TRISBbits.TRISB0 = 0;
 }
 
-inline void
-reset_tmr6() {
-    TMR6 = 6;
-    tmr6_ovf = 0x00;
-}
-
-const time_t *get_uptime(void) {
+static const time_t *get_uptime(void) {
     return &uptime_s;
 }
 
@@ -88,7 +78,7 @@ byte Toggle_Brightess(void) {
     return CCPR4L;
 }
 
-void incr_active_digit() {
+static void incr_active_digit() {
     if (active_digit < 4)
         active_digit++;
     else
@@ -96,6 +86,8 @@ void incr_active_digit() {
 }
 
 void TMR6_ISR() {
+volatile static byte tmr6_ovf = 0; /* Counter for Timer6 overflow */
+volatile static byte time_200ms = 0; /* Counter for 200 ms periods */
     /* Display will refresh with this timer running at 100Hz (T=10ms).
      * Preload at 6 so that irq ea. (2^8-6)*250us*16*10 = 10ms
      */
@@ -139,7 +131,9 @@ void TMR6_ISR() {
     /* Clock clocking */
     if (tmr6_ovf++ >= 20) // 200ms have passed
     {
-        reset_tmr6();
+        TMR6 = 6;
+        tmr6_ovf = 0;
+        
         if (time_200ms++ >= 5) // 200ms * 5  = 1 s
         {
             time_200ms = 0; /* Reset 200ms counter */
@@ -167,10 +161,7 @@ void TMR6_ISR() {
     PIR3bits.TMR6IF = 0;
 }
 
-/**
- *
- */
-void CCP4_ISR() {
-    PIR3bits.CCP4IF = 0;
-
+void TMR4_ISR() {
+    PIR3bits.TMR4IF = 0;
+           
 }

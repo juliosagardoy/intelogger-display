@@ -64,6 +64,10 @@ void interrupt INTERRUPT_InterruptManager()
     {
         TMR6_ISR();
     }
+    else if (PIE3bits.TMR4IE == 1 && PIR3bits.TMR4IF == 1)
+    {
+        TMR4_ISR();
+    }
     else if (INTCONbits.IOCIE == 1 && IOCBFbits.IOCBF1 == 1)
     {
         SW1_ISR();

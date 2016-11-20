@@ -26,16 +26,10 @@ void init_tmr6(void);
  */
 void init_ccp(void);
 
-/**
- * Manually resets Timer6 to initial state, which is preloaded to 6
- * This has to be called after each interrupt.
- */
-inline void reset_tmr6(void);
-
 /** Handle to uptime_s for time.h gmtime-type methods
  * @return pointer to uptime_s
  */
-const time_t *get_uptime(void);
+static const time_t *get_uptime(void);
 
 /** Increase uptime by s seconds
  *  @arg s seconds to be increased
@@ -49,17 +43,10 @@ void incr_uptime(time_t);
 byte Toggle_Brightess(void);
 
 /**
- * Return current value of the counter from 0 to 3
- * This gets updated increased at every running every Timer6 irq rated 100Hz
- * @return 
- */
-byte get_active_digit(void);
-
-/**
  * Counter 0,1,2,3,then-wrap-around; used for digit selection.
  * Calling it increase value of active_digit
  */
-void incr_active_digit(void);
+static void incr_active_digit(void);
 
 /**
  * Timer6 interruption routine
@@ -68,6 +55,9 @@ void incr_active_digit(void);
  * 
  */
 void TMR6_ISR(void);
-void CCP4_ISR(void);
 
+/**
+ * 
+ */
+void TMR4_ISR(void);
 #endif	/* TIMER_H */

@@ -12,7 +12,7 @@ void nmea_parser() {
     /* Refresh GPS */
     if (EUSART_Read_1Byte() != '$') /* Found GPS start bit */ {
         /* Read NMEA sentence header (5 chars string) */
-        char nmea_header[5];
+        byte nmea_header[5];
         memset(nmea_header, 0x00, 5);
 
         for (int i = 0; i < 5; i++) {

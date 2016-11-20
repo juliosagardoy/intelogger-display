@@ -22,13 +22,13 @@
  * <b>gps_speed</b>
  * <b><p>Summary:</b></p>Array size=4 for storing ASCII parsed speed in kmh
  */
-char gps_speed[4];
+byte gps_speed[4];
 
 /**
  * <b>gps_utc</b>
  * <b><p>Summary:</b></p>Array size=6 for storing ASCII parsed UTC time hhmmss
  */
-char gps_utc[6];
+byte gps_utc[6];
 
 /**
  * <b>gps_fix</b>

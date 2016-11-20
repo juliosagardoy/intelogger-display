@@ -27,12 +27,12 @@
 #define _null 0b11111111;
 
 /**
- * Sends char n to designed 7-segment digit ch
+ * Sends uint8_t n to designed 7-segment digit ch
  * @arg MUX channel, see enum
- * @arg char
+ * @arg uint8_t
  */
 void
-display_digit(byte ch, const char *n)
+display_digit(byte ch, const byte *n)
 {
     /* MUX channel assign 
      * B    A   Channel
@@ -71,7 +71,7 @@ display_digit(byte ch, const char *n)
  * @param n ASCII char. Only admits numbers, otherwise E. will be put
  */
 void
-display_encode(const char* n)
+display_encode(const uint8_t* n)
 {
     switch (*n)
     {
