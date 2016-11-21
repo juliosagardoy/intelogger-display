@@ -54,7 +54,7 @@ void interrupt INTERRUPT_InterruptManager()
     }
     else if (PIE3bits.CCP4IE == 1 && PIR3bits.CCP4IF == 1)
     {
-       // CCP4_ISR();
+        CCP4_ISR();
     }
     else if (PIE1bits.TMR2IE == 1 && PIR1bits.TMR2IF == 1)
     {
