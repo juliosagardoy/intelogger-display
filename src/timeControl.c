@@ -23,10 +23,12 @@ init_tmr6() {
     uptime_s = 0x00;
     active_digit = 0x01;
 
-    /* Configure overflow: Fcy=4MHz; Tcy=250ns * 64 * 16 = 256us per tick */
-    T6CONbits.T6CKPS = 0b11; // Prescaler @ 1:64
-    T6CONbits.T6OUTPS = 0b1111; // Postscaler @ 1:16
-    TMR6 = 6; // Preload at 6, then irq ea. (2^8-6)*250us*16*10 = 10ms
+    /* Configure overflow: Fcy=1MHz; Tcy=100ns * 1 * 10 = 1 us per tick */
+    //T6CONbits.T6CKPS = 0b11; // Prescaler @ 1:64
+    T6CONbits.T6CKPS = 0b00;    // Prescaler @ 1:1
+    //T6CONbits.T6OUTPS = 0b1111; // Postscaler @ 1:16
+    T6CONbits.T6OUTPS = 0b1001; // Postscaler @ 1:10
+    TMR6 = 6; // Preload at 6, then irq ea. (2^8-6)*1 us = 250 us
     PIE3bits.TMR6IE = 1;
     T6CONbits.TMR6ON = 1;
 }
@@ -36,8 +38,8 @@ init_tmr6() {
  */
 void
 init_tmr4() {
-    /* Configure overflow: Tcy=250ns * 16 = 4us/tick 
-     * 4us/tick * 256 = 1.024 ms to overflow
+    /* Configure overflow: Tcy=1/(Fosc/4)= 1us * 64presc = 64us/tick 
+     * 64us/tick * 256 = 0,016384 s to overflow
      */
     T4CONbits.T4CKPS = 0b11; /* Prescaler @ 1:64 */
     PIE3bits.TMR4IE = 1;
@@ -48,17 +50,19 @@ init_tmr4() {
 
 void
 init_ccp() {
-    TRISBbits.TRISB0 = 1;
+    TRISBbits.TRISB0 = 1; /* Temporarily disable output to avoid glitches */
     CCPTMRS0bits.C4TSEL = 0b01; /* CCP4 is based off Timer4 in PWM mode */
-    PR4 = 64; /* PWM Period 100ms = 2^8/(PWMPeriodMAX/TMR4ovflow) = 64*/
-    PR4 = 32;
-    /* DC will vary, refresh rate fixed to 100Hz */
-    /* DC LSb fixed to 00, we only vary Msb */
-    CCP4CON = 0b00110000; /* Select PWM mode and duty cycle 2-MSb */
-    /* With PR4=64, CCPR4L at 64=0b10000(00) will set DC=100%. 
-     * () Remember 2 LSb are unused but specified in CCP4CON */
-    CCPR4L = 0b10000; /* duty cycle 8-MSb */
+    PR4 = 255; /* PWM Period = 0.016384 s = 62Hz */
+
+    /* DC will vary, refresh rate fixed to 62Hz */
+    CCP4CON = 0b11; /* Select PWM mode and duty cycle 2-MSb */
+    
+    /* () Remember 2 LSb are unused but specified in CCP4CON */
+    CCPR4L = 0b111111; /* duty cycle 8-MSb */
+
     init_tmr4();
+
+    PIE3bits.CCP4IE = 1;
     TRISBbits.TRISB0 = 0;
 }
 
@@ -72,9 +76,9 @@ void incr_uptime(time_t s) {
 
 byte Toggle_Brightess(void) {
     if (CCPR4L < 0b100000)
-        CCPR4L = 0b100000; /* Make bright again - DC=100% */
+        CCPR4L = 0b111111; /* Make bright again - DC=100% */
     else
-        CCPR4L = 0b10000; /* Cut DC to 50% */
+        CCPR4L = 0b100000; /* Cut DC to 50% */
     return CCPR4L;
 }
 
@@ -85,58 +89,57 @@ static void incr_active_digit() {
         active_digit = 0;
 }
 
+/* Overflow every 250us! */
 void TMR6_ISR() {
-volatile static byte tmr6_ovf = 0; /* Counter for Timer6 overflow */
-volatile static byte time_200ms = 0; /* Counter for 200 ms periods */
+    volatile static byte tmr6_ovf1 = 0; /* Counter for Timer6 overflow */
+    volatile static byte tmr6_ovf2 = 0; /* Counter at 100Hz for display updates */
+    volatile static byte tmr6_ovf3 = 0; /* Counter at 4Hz for clock */
+    
     /* Display will refresh with this timer running at 100Hz (T=10ms).
-     * Preload at 6 so that irq ea. (2^8-6)*250us*16*10 = 10ms
+     * Preload at 6 so that irq ea. (2^8-6)*1us = 250us
      */
-#ifdef SIM_ON
-    mode = 2;
-    gps_speed[0] = '1';
-    gps_speed[1] = '2';
-#endif
+    if (tmr6_ovf2++ >= 40) /* 250us * 40 = 10ms */ {
+        if (mode == 1) {
+            if (active_digit == 1)
+                display_digit(1, &c_hour[0]);
 
-    if (mode == 1) {
-        if (active_digit == 1)
-            display_digit(1, &c_hour[0]);
+            else if (active_digit == 2)
+                display_digit(2, &c_hour[1]);
 
-        else if (active_digit == 2)
-            display_digit(2, &c_hour[1]);
-
-        else if (active_digit == 3)
-            display_digit(3, &c_min[0]);
-        else
-            display_digit(4, &c_min[1]);
-    } else if (mode == 2) {
-        /* Speed display will be aligned to the right of the display.  
-         The following takes the lenght of speed sentence into account */
-        /* Speed between 0 and 9 kmh */
-        if (strlen(gps_speed) == 1 && active_digit == 4)
-            display_digit(active_digit, &gps_speed[0]);
-        /* Speed between 10 and 99 kmh */
-        else if (strlen(gps_speed) == 2 \
+            else if (active_digit == 3)
+                display_digit(3, &c_min[0]);
+            else
+                display_digit(4, &c_min[1]);
+        } else if (mode == 2) {
+            /* Speed display will be aligned to the right of the display.  
+             The following takes the lenght of speed sentence into account */
+            /* Speed between 0 and 9 kmh */
+            if (strlen(gps_speed) == 1 && active_digit == 4)
+                display_digit(active_digit, &gps_speed[0]);
+                /* Speed between 10 and 99 kmh */
+            else if (strlen(gps_speed) == 2 \
                 && (active_digit == 3 || active_digit == 4))
-            display_digit(active_digit, &gps_speed[active_digit - 3]);
-        /* Speed between 100 kmh and 999 kmh :) */
-        else if (strlen(gps_speed) == 3 \
+                display_digit(active_digit, &gps_speed[active_digit - 3]);
+                /* Speed between 100 kmh and 999 kmh :) */
+            else if (strlen(gps_speed) == 3 \
                 && (active_digit == 2) || active_digit == 3 || active_digit == 4)
-            display_digit(active_digit, &gps_speed[active_digit - 2]);
-        else
-            display_digit(active_digit,"");
+                display_digit(active_digit, &gps_speed[active_digit - 2]);
+            else
+                display_digit(active_digit, "");
+        }
+        /* At each iteration, switch active digit */
+        incr_active_digit();
     }
-    /* At each iteration, switch active digit */
-    incr_active_digit();
-
+    
     /* Clock clocking */
-    if (tmr6_ovf++ >= 20) // 200ms have passed
+    if (tmr6_ovf1++ >= 250) // 250us*250 = 62.5 ms have passed
     {
         TMR6 = 6;
-        tmr6_ovf = 0;
-        
-        if (time_200ms++ >= 5) // 200ms * 5  = 1 s
+        tmr6_ovf1 = 0;
+
+        if (tmr6_ovf3++ >= 16) // 62.5ms * 16  = 1 s
         {
-            time_200ms = 0; /* Reset 200ms counter */
+            tmr6_ovf3 = 0; /* Reset 200ms counter */
             uptime_s++; /* Increase clock by one second */
 
             tp = gmtime(get_uptime()); /* Re-populates tm time.h struct */
@@ -163,5 +166,9 @@ volatile static byte time_200ms = 0; /* Counter for 200 ms periods */
 
 void TMR4_ISR() {
     PIR3bits.TMR4IF = 0;
-           
+
+}
+
+void CCP4_ISR() {
+    PIR3bits.CCP4IF = 0;
 }
