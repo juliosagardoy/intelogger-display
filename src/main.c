@@ -16,12 +16,10 @@
 
 static void
 init_osc() {
-    OSCCON = 0x68; /* 01101000 PLL OFF,4MHz INTOSC, OSC defined in ConfBytes
-    * OSTS intosc; HFIOFR disabled; HFIOFS not0.5percent_acc; PLLR disabled;
-    * T1OSCR disabled; MFIOFR disabled; HFIOFL not2percent_acc; LFIOFR disabled;
-    * TUN 0x0;
-    */
+    OSCCON = 0b01101110; /* 01101000 PLL OFF,4MHz INTOSC, OSC defined in ConfBytes */
+
     OSCTUNE = 0x00;
+    while(!OSCSTATbits.PLLR) {};    /* Wait PLL to lock */
 }
 
 static void
@@ -38,8 +36,7 @@ init_mcu() {
     ANSELA = 0x00; // All GPIO
 
     /* PWM generator */
-    //  TRISBbits.TRISB0 = 0;
-    ANSELBbits.ANSB0 = 1; // Select CCP
+    /* ...Done at init_ccp... */
 
     /* MUX channel selector outputs */
     TRISBbits.TRISB4 = 0;
