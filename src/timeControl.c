@@ -95,10 +95,13 @@ void TMR6_ISR() {
     volatile static byte tmr6_ovf2 = 0; /* Counter at 100Hz for display updates */
     volatile static byte tmr6_ovf3 = 0; /* Counter at 4Hz for clock */
     
+    TMR6 = 6;
+    
     /* Display will refresh with this timer running at 100Hz (T=10ms).
      * Preload at 6 so that irq ea. (2^8-6)*1us = 250us
      */
     if (tmr6_ovf2++ >= 40) /* 250us * 40 = 10ms */ {
+        tmr6_ovf2 = 0;
         if (mode == 1) {
             if (active_digit == 1)
                 display_digit(1, &c_hour[0]);
@@ -134,7 +137,6 @@ void TMR6_ISR() {
     /* Clock clocking */
     if (tmr6_ovf1++ >= 250) // 250us*250 = 62.5 ms have passed
     {
-        TMR6 = 6;
         tmr6_ovf1 = 0;
 
         if (tmr6_ovf3++ >= 16) // 62.5ms * 16  = 1 s

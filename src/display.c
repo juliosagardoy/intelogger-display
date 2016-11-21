@@ -76,43 +76,44 @@ display_encode(const uint8_t* n)
     switch (*n)
     {
     case '0':
-        LATC = _0;
+        LATA = _0;
+        
         break;
     case '1':
-        LATC = _1;
+        LATA = _1;
         break;
     case '2':
-        LATC = _2;
+        LATA = _2;
         break;
     case '3':
-        LATC = _3;
+        LATA = _3;
         break;
     case '4':
-        LATC = _4;
+        LATA = _4;
         break;
     case '5':
-        LATC = _5;
+        LATA = _5;
         break;
     case '6':
-        LATC = _6;
+        LATA = _6;
         break;
     case '7':
-        LATC = _7;
+        LATA = _7;
         break;
     case '8':
-        LATC = _8;
+        LATA = _8;
         break;
     case '9':
-        LATC = _9;
+        LATA = _9;
         break;
     case '.':
-        LATC = _dp;
+        LATA = _dp;
         break;
     case 'e':
-        LATC = _err;
+        LATA = _err;
         break;
     default:
-        LATC = _null;
+        LATA = _null;
         break;
     }
 }

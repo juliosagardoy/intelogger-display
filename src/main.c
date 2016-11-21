@@ -6,6 +6,7 @@
  */
 
 #include <string.h>
+#include "configBytes.h"
 #include "Globals.h"
 #include "timeControl.h"
 #include "switches.h"
@@ -16,10 +17,10 @@
 
 static void
 init_osc() {
-    OSCCON = 0b01101110; /* 01101000 PLL OFF,4MHz INTOSC, OSC defined in ConfBytes */
+    OSCCON = 0b01101000; /* 01101000 PLL OFF,4MHz INTOSC, OSC defined in ConfBytes */
 
     OSCTUNE = 0x00;
-    while(!OSCSTATbits.PLLR) {};    /* Wait PLL to lock */
+//    while(!OSCSTATbits.PLLR) {};    /* Wait PLL to lock */
 }
 
 static void
@@ -33,25 +34,27 @@ init_mcu() {
 
     /* 7-SEG ports direction config */
     TRISA = 0x00;
-    ANSELA = 0x00; // All GPIO
+    LATA = 0x00;    // All on = all led off
+    ANSELA = 0x00; // All Digital
 
     /* PWM generator */
+    ANSELBbits.ANSB0 = 0;   // Select Digital
     /* ...Done at init_ccp... */
 
     /* MUX channel selector outputs */
     TRISBbits.TRISB4 = 0;
     TRISBbits.TRISB5 = 0;
-    ANSELBbits.ANSB4 = 0; // Select GPIO
-    ANSELBbits.ANSB5 = 0; // Select GPIO
+    ANSELBbits.ANSB4 = 0; // Select Digital
+    ANSELBbits.ANSB5 = 0; // Select Digital
 
     /* Switch inputs */
     OPTION_REGbits.nWPUEN = 0; /* Enable individual weak pull-ups */
     TRISBbits.TRISB1 = 1;
     TRISBbits.TRISB2 = 1;
     TRISBbits.TRISB3 = 1;
-    ANSELBbits.ANSB1 = 0; // Select GPIO
-    ANSELBbits.ANSB2 = 0; // Select GPIO
-    ANSELBbits.ANSB3 = 0; // Select GPIO
+    ANSELBbits.ANSB1 = 0; // Select Digital
+    ANSELBbits.ANSB2 = 0; // Select Digital
+    ANSELBbits.ANSB3 = 0; // Select Digital
     IOCBNbits.IOCBN1 = 1; /* Enable interrupt-on-change negative edge */
     IOCBNbits.IOCBN2 = 1;
     IOCBNbits.IOCBN3 = 1;
