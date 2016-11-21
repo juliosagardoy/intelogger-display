@@ -60,4 +60,9 @@ void TMR6_ISR(void);
  * 
  */
 void TMR4_ISR(void);
+
+/**
+ *
+ */
+void CCP4_ISR(void);
 #endif	/* TIMER_H */
