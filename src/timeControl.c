@@ -24,11 +24,11 @@ void
 init_tmr6() {
     active_digit = 0;
 
-    /* Configure overflow: Fcy=1MHz; Tcy=100ns * 10 * 64 = 76,8us per tick */
-    T6CONbits.T6CKPS = 0b11; // Prescaler @ 1:64
-    T6CONbits.T6OUTPS = 0b1011; // Postscaler @ 1:12
+    /* Configure overflow: Fcy=1MHz; (Tcy=100ns * 10 * 64)/2 = 38,4us per tick */
+    T6CONbits.T6CKPS = 0b00; // Prescaler @ 1:64
+    T6CONbits.T6OUTPS = 0b1110; // Postscaler @ 1:12
 
-    TMR6 = 130; // Preload at 130, then irq ea. (130)*76,8 us = 9.984 ms = 100Hz
+    TMR6 = 0; // Then irq ea. 256*38,4 us = 9.830 ms = 102Hz
     PIE3bits.TMR6IE = 1;
     T6CONbits.TMR6ON = 1;
 }
@@ -41,7 +41,7 @@ init_tmr4() {
     /* Configure overflow: Tcy=1/(Fosc/4)= 1us * 64presc = 64us/tick 
      * 64us/tick * 256 = 0,016384 s to overflow
      */
-    T4CONbits.T4CKPS = 0b11; /* Prescaler @ 1:64 */
+    T4CONbits.T4CKPS = 0b01; /* Prescaler @ 1:64 */
     PIE3bits.TMR4IE = 1;
 
     T4CONbits.TMR4ON = 1;
@@ -75,8 +75,8 @@ init_ccp() {
     CCP4CON = 0b11; /* Select PWM mode and duty cycle 2-MSb */
 
     /* () Remember 2 LSb are unused but specified in CCP4CON */
-    CCPR4L = 0b111111; /* duty cycle 8-MSb */
-
+    //CCPR4L = 0b111111; /* duty cycle 8-MSb */
+    CCPR4L = 0b100000; /* duty cycle 8-MSb */
     init_tmr4();
 
     PIE3bits.CCP4IE = 1;
@@ -96,7 +96,7 @@ byte Toggle_Brightess(void) {
 }
 
 static void incr_active_digit() {
-    if (active_digit < 4)
+    if (active_digit < 3)
         active_digit++;
     else
         active_digit = 0;
@@ -104,7 +104,7 @@ static void incr_active_digit() {
 
 /* Overflow every 9.98 ms! 100Hz*/
 void TMR6_ISR() {
-    TMR6 = 130;
+    TMR6 = 0;
 
     if (display_mode == 1)
         display_digit(active_digit, &c_digits[active_digit]);
@@ -148,12 +148,12 @@ void TMR2_ISR() {
         tp = gmtime(&uptime_s); /* Re-populates tm time.h struct */
         
         /* DIRTY Workaround to fix itoa output when number is only one cypher. */
-        if (tp->tm_min < 10) {
-            itoa(tmp, tp->tm_min, 10);
+        if (tp->tm_sec < 10) {
+            itoa(tmp, tp->tm_sec, 10);
             c_digits[3] = tmp[1];
             c_digits[2] = '0';
         } else
-            itoa(tmp, tp->tm_min, 10);
+            itoa(tmp, tp->tm_sec, 10);
 
         if (tp->tm_hour < 10) {
             itoa(tmp, tp->tm_hour, 10);

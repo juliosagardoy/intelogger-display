@@ -50,15 +50,11 @@ void interrupt INTERRUPT_InterruptManager()
     }
     else if (PIE1bits.TMR1IE == 1 && PIR1bits.TMR1IF == 1)
     {
-        //PIR1bits.TMR1IF = 0;
+        PIR1bits.TMR1IF = 0;
     }
     else if (PIE3bits.CCP4IE == 1 && PIR3bits.CCP4IF == 1)
     {
         CCP4_ISR();
-    }
-    else if (PIE1bits.TMR2IE == 1 && PIR1bits.TMR2IF == 1)
-    {
-        //		TMR2_ISR();
     }
     else if (PIE3bits.TMR6IE == 1 && PIR3bits.TMR6IF == 1)
     {
@@ -67,6 +63,10 @@ void interrupt INTERRUPT_InterruptManager()
     else if (PIE3bits.TMR4IE == 1 && PIR3bits.TMR4IF == 1)
     {
         TMR4_ISR();
+    }
+    else if (PIE1bits.TMR2IE == 1 && PIR1bits.TMR2IF == 1)
+    {
+        TMR2_ISR();
     }
     else if (INTCONbits.IOCIE == 1 && IOCBFbits.IOCBF1 == 1)
     {

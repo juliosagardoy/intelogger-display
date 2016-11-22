@@ -79,7 +79,7 @@ uint8_t EUSART_Read_1Byte_NONBL(void) {
     //    while(0 == eusartRxCount)
     //    {
     //    }
-    if (1 == eusartRxBuffer) {
+    if (1 >= eusartRxCount) {
         PIE1bits.RCIE = 0;
 
         readValue = eusartRxBuffer[eusartRxTail++];
