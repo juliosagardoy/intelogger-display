@@ -135,7 +135,8 @@ void TMR6_ISR() {
 /** Overflow every 250 us! */
 void TMR2_ISR() {
     volatile static word tmr6_ovf1 = 0; /* Counter for Timer6 overflow */
-
+    volatile byte tmp[2];
+    
     TMR2 = 6;
 
     /* Clock clocking */
@@ -148,15 +149,15 @@ void TMR2_ISR() {
         
         /* DIRTY Workaround to fix itoa output when number is only one cypher. */
         if (tp->tm_min < 10) {
-            itoa(c_digits, tp->tm_min, 10);
-            c_digits[3] = c_digits[2];
+            itoa(tmp, tp->tm_min, 10);
+            c_digits[3] = tmp[1];
             c_digits[2] = '0';
         } else
-            itoa(c_digits, tp->tm_min, 10);
+            itoa(tmp, tp->tm_min, 10);
 
         if (tp->tm_hour < 10) {
-            itoa(c_digits, tp->tm_hour, 10);
-            c_digits[1] = c_digits[2];
+            itoa(tmp, tp->tm_hour, 10);
+            c_digits[1] = tmp[1];
             c_digits[0] = '0';
         } else
             itoa(c_digits, tp->tm_hour, 10);
