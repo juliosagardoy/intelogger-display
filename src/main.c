@@ -6,6 +6,7 @@
  */
 
 #include <string.h>
+
 #include "configBytes.h"
 #include "Globals.h"
 #include "timeControl.h"
@@ -34,8 +35,8 @@ init_mcu() {
 
     /* 7-SEG ports direction config */
     TRISA = 0x00;
-    LATA = 0x00;    // All on = all led off
-    ANSELA = 0x00; // All Digital
+    LATA = 0xFF;    // All on = all led off
+    ANSELA = 0x00;  // All Digital
 
     /* PWM generator */
     ANSELBbits.ANSB0 = 0;   // Select Digital
@@ -65,6 +66,7 @@ void main(void) {
     init_osc();
     init_mcu();
     init_tmr6();
+    init_tmr2();
     init_ccp();
     init_eusart();
 
