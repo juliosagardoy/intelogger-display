@@ -81,7 +81,7 @@ void main(void) {
         TMR6_ISR();
 #endif
 #ifndef SIM_ON
-//        nmea_parser();
+        nmea_parser();
 #endif
     }
 
