@@ -32,8 +32,7 @@
  * @arg uint8_t
  */
 void
-display_digit(byte ch, const byte *n)
-{
+display_digit(byte ch, const byte *n) {
     /* MUX channel assign 
      * B    A   Channel
      * RB5  RB4
@@ -41,26 +40,24 @@ display_digit(byte ch, const byte *n)
      * 0    1   DISP_C2
      * 1    0   DISP_C3
      * 1    1   DISP_C4
-    */
-    switch (ch)
-    {
-    case 1: /* Hour higher cypher */
-        LATBbits.LATB4 = 0;
-        LATBbits.LATB5 = 0;
-        break;
-    case 2: /* Hour lower cypher */
-        LATBbits.LATB4 = 1;
-        LATBbits.LATB5 = 0;
-        break;
-    case 3: /* Minutes higher cypher */
-        LATBbits.LATB4 = 0;
-        LATBbits.LATB5 = 1;
-        break;
-    case 4: 
-    default: /* Minutes lower cypher */
-        LATBbits.LATB4 = 1;
-        LATBbits.LATB5 = 1;
-        break;
+     */
+    switch (ch) {
+        case 0: /* Hour higher cypher */
+            LATBbits.LATB4 = 0;
+            LATBbits.LATB5 = 0;
+            break;
+        case 1: /* Hour lower cypher */
+            LATBbits.LATB4 = 1;
+            LATBbits.LATB5 = 0;
+            break;
+        case 2: /* Minutes higher cypher */
+            LATBbits.LATB4 = 0;
+            LATBbits.LATB5 = 1;
+            break;
+        case 3:
+        default: /* Minutes lower cypher */
+            LATBbits.LATB4 = 1;
+            LATBbits.LATB5 = 1;
     }
     display_encode(n);
 }
@@ -71,50 +68,47 @@ display_digit(byte ch, const byte *n)
  * @param n ASCII char. Only admits numbers, otherwise E. will be put
  */
 void
-display_encode(const uint8_t* n)
-{
-    switch (*n)
-    {
-    case '0':
-        LATA = _0;
-        
-        break;
-    case '1':
-        LATA = _1;
-        break;
-    case '2':
-        LATA = _2;
-        break;
-    case '3':
-        LATA = _3;
-        break;
-    case '4':
-        LATA = _4;
-        break;
-    case '5':
-        LATA = _5;
-        break;
-    case '6':
-        LATA = _6;
-        break;
-    case '7':
-        LATA = _7;
-        break;
-    case '8':
-        LATA = _8;
-        break;
-    case '9':
-        LATA = _9;
-        break;
-    case '.':
-        LATA = _dp;
-        break;
-    case 'e':
-        LATA = _err;
-        break;
-    default:
-        LATA = _null;
-        break;
+display_encode(const uint8_t* n) {
+    switch (*n) {
+        case '0':
+            LATA = _0;
+            break;
+        case '1':
+            LATA = _1;
+            break;
+        case '2':
+            LATA = _2;
+            break;
+        case '3':
+            LATA = _3;
+            break;
+        case '4':
+            LATA = _4;
+            break;
+        case '5':
+            LATA = _5;
+            break;
+        case '6':
+            LATA = _6;
+            break;
+        case '7':
+            LATA = _7;
+            break;
+        case '8':
+            LATA = _8;
+            break;
+        case '9':
+            LATA = _9;
+            break;
+        case '.':
+            LATA = _dp;
+            break;
+        case 'e':
+            LATA = _err;
+            break;
+        default:
+            LATA = _null;
+            break;
     }
 }
 
