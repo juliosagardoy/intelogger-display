@@ -21,7 +21,6 @@ init_osc() {
     OSCCON = 0b01101000; /* 01101000 PLL OFF,4MHz INTOSC, OSC defined in ConfBytes */
 
     OSCTUNE = 0x00;
-//    while(!OSCSTATbits.PLLR) {};    /* Wait PLL to lock */
 }
 
 static void
