@@ -33,6 +33,7 @@ volatile uint8_t eusartRxCount;
 /* USART */
 void init_eusart();
 uint8_t EUSART_Read_1Byte(void);
+uint8_t EUSART_Read_1Byte_NONBL(void);
 uint16_t EUSART_Read_2Bytes(void);
 void EUSART_Write_1Byte(byte);
 void EUSART_Write_2Bytes(word);
