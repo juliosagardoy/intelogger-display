@@ -41,7 +41,7 @@ typedef uint16_t    word;
 /**
  * 
  */
-volatile byte mode = 1; /* Display mode: 1-clock 2-speed */
+volatile byte display_mode = 1; /* Display mode: 1-clock 2-speed */
 
 #endif	/* GLOBALS_H */
 
