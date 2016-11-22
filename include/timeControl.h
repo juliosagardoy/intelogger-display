@@ -21,15 +21,22 @@ struct tm* tp; /* Handle to Time struct */
 void init_tmr6(void);
 
 /**
+ * Init timer6 to overflow every 10ms
+ * Fcy=4MHz
+ */
+static void init_tmr4(void);
+
+/**
+ * Init timer6 to overflow every 10ms
+ * Fcy=4MHz
+ */
+void init_tmr2(void);
+
+/**
  * Init CCP4 module for PWM
  * 
  */
 void init_ccp(void);
-
-/** Handle to uptime_s for time.h gmtime-type methods
- * @return pointer to uptime_s
- */
-static const time_t *get_uptime(void);
 
 /** Increase uptime by s seconds
  *  @arg s seconds to be increased
@@ -60,6 +67,11 @@ void TMR6_ISR(void);
  * 
  */
 void TMR4_ISR(void);
+
+/**
+ *
+ */
+void TMR2_ISR(void);
 
 /**
  *
