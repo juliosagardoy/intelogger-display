@@ -77,7 +77,7 @@ void main(void) {
     
     while (1) {
 #ifdef SIM_ON
-        TMR6_ISR();
+        TMR2_ISR();
 #endif
 #ifndef SIM_ON
         nmea_parser();
