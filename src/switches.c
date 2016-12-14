@@ -5,6 +5,7 @@
  * Revision history: 1
  */
 
+#include "Globals.h"
 #include "timeControl.h"
 
 void SW1_ISR()	/* "H" sw pushed */
@@ -41,4 +42,6 @@ void SW2_ISR()	/* "M" sw pushed */
 void SW3_ISR()	/* "R" sw pushed */
 {
 	/* Change mode */
+    if(display_mode++ == 2)
+        display_mode=1;
 }

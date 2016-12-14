@@ -22,7 +22,8 @@
 #define _7 0b01001101;
 #define _8 0b01000000;
 #define _9 0b01000100;
-#define _err 0b00110000;
+#define _E 0b00110000;
+#define _dash 0b11111110;
 #define _dp 0b10111111;
 #define _null 0b11111111;
 
@@ -103,8 +104,11 @@ display_encode(const uint8_t* n) {
         case '.':
             LATA = _dp;
             break;
+        case '-':
+            LATA = _dash ;
+            break;
         case 'e':
-            LATA = _err;
+            LATA = _E;
             break;
         default:
             LATA = _null;

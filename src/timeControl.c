@@ -13,7 +13,7 @@
 
 static time_t uptime_s; /* time_t in seconds, from time.h */
 static volatile byte active_digit; /* Stores below enum 0,1,2,3 active 7-seg digit */
-byte c_digits[4] = {'1', '2', '3', '4'};
+byte c_digits[4] = {'-', '-', '-', '-'};
 
 /** 
  * Timer6 for display refresh events --> around 10ms/100Hz
@@ -72,12 +72,12 @@ init_ccp() {
     CCPTMRS0bits.C4TSEL = 0b01; /* CCP4 is based off Timer4 in PWM mode */
     PR4 = 127; /* PWM Period = TMR2 till ovf/2 = 0.008192 s */
 
-     /* Select duty cycle 2-MSb (10) and PWM mode (11xx) */
+    /* Select duty cycle 2-MSb (10) and PWM mode (11xx) */
     //CCP4CON = 0b101100;
-CCP4CON = 0b111100;
+    CCP4CON = 0b111100;
     /* 2 LSb in CCP4CON */
     //CCPR4L = 0b000000; /* duty cycle 8-MSb */
-CCPR4L = 0b111111; /* duty cycle 8-MSb */
+    CCPR4L = 0b111111; /* duty cycle 8-MSb */
     init_tmr4();
 
     PIE3bits.CCP4IE = 1;
@@ -110,13 +110,23 @@ static void incr_active_digit() {
 /* Overflow every 15 ms! 65Hz*/
 void TMR6_ISR() {
     TMR6 = 6;
-incr_active_digit();
+
+    /* At each iteration, switch active digit */
+    incr_active_digit();
+
     if (display_mode == 1)
         display_digit(active_digit, &c_digits[active_digit]);
 
     else if (display_mode == 2) {
+#ifdef SIM_ON
+        gps_speed[0] = '1';
+        gps_speed[1] = '2';
+        gps_speed[2] = '0';
+        gps_speed[3] = 0x00;
+#endif
+
         /* Speed display will be aligned to the right of the display.  
-         The following takes the lenght of speed sentence into account */
+         * The following takes the length of speed sentence into account */
         /* Speed between 0 and 9 kmh */
         if (strlen(gps_speed) == 1 && active_digit == 4)
             display_digit(active_digit, &gps_speed[0]);
@@ -131,8 +141,6 @@ incr_active_digit();
         else
             display_digit(active_digit, "");
     }
-    /* At each iteration, switch active digit */
-    
 
     PIR3bits.TMR6IF = 0;
 }
@@ -142,34 +150,40 @@ void TMR2_ISR() {
     static byte tmr6_ovf1 = 0; /* Counter for Timer6 overflow */
     byte tmp[2];
 
+#ifdef SIM_ON       /* Simulate call to TMR6_ISR after 15ms */
+    static byte isr2_qt = 1;
+    if (isr2_qt++ == 3) /* 3*5ms=15ms have passed*/
+        TMR6_ISR();
+#endif
+
     TMR2 = 6;
 
     /* Clock clocking */
-//    if (++tmr6_ovf1 >= 200) // 5ms*200 = 1 s have passed
-//    {
-//        tmr6_ovf1 = 0;
-//        uptime_s++; /* Increase clock by one second */
-//
-//        tp = gmtime(&uptime_s); /* Re-populates tm time.h struct */
-//
-//        /* DIRTY Workaround to fix itoa output when number is only one cypher. */
-//        if (tp->tm_sec < 10) {
-//            itoa(tmp, tp->tm_sec, 10);
-//            c_digits[3] = tmp[1];
-//            c_digits[2] = '0';
-//        } else {
-//            itoa(tmp, tp->tm_sec, 10);
-//            c_digits[3] = tmp[1];
-//            c_digits[2] = tmp[0];
-//        }
-//        if (tp->tm_hour < 10) {
-//            itoa(tmp, tp->tm_hour, 10);
-//            c_digits[1] = tmp[1];
-//            c_digits[0] = '0';
-//        } else
-//            itoa(c_digits, tp->tm_hour, 10);
-//        /* END of DIRTY */
-//    }
+    if (tmr6_ovf1++ >= 200) // 5ms*200 = 1 s have passed
+    {
+        tmr6_ovf1 = 0;
+        uptime_s++; /* Increase clock by one second */
+
+        tp = gmtime(&uptime_s); /* Re-populates tm time.h struct */
+
+        /* DIRTY Workaround to fix itoa output when number is only one cypher. */
+        if (tp->tm_sec < 10) {
+            itoa(tmp, tp->tm_sec, 10);
+            c_digits[3] = tmp[0];
+            c_digits[2] = '0';
+        } else {
+            itoa(tmp, tp->tm_sec, 10);
+            c_digits[3] = tmp[1];
+            c_digits[2] = tmp[0];
+        }
+        if (tp->tm_hour < 10) {
+            itoa(tmp, tp->tm_hour, 10);
+            c_digits[1] = tmp[0];
+            c_digits[0] = '0';
+        } else
+            itoa(c_digits, tp->tm_hour, 10);
+        /* END of DIRTY */
+    }
 
     PIR1bits.TMR2IF = 0;
 }
