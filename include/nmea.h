@@ -18,33 +18,39 @@
 // TODO Insert C++ class definitions if appropriate
 
 // TODO Insert declarations
-/**
- * <b>gps_speed</b>
- * <b><p>Summary:</b></p>Array size=4 for storing ASCII parsed speed in kmh
- */
-byte gps_speed[4];
 
-/**
- * <b>gps_utc</b>
- * <b><p>Summary:</b></p>Array size=6 for storing ASCII parsed UTC time hhmmss
- */
-byte gps_utc[6];
+typedef struct {
+    /**
+     * <b>gps_speed</b>
+     * <b><p>Summary:</b></p>Array size=4 for storing ASCII parsed speed in kmh
+     */
+    byte speed[4];
 
-/**
- * <b>gps_fix</b>
- * <b><p>Summary:</b></p>After parsing nmea, will equal 1 when GPS fix is valid
- * and 0 otherwise
- */
-byte gps_fix;
+    /**
+     * <b>gps_utc</b>
+     * <b><p>Summary:</b></p>Array size=6 for storing ASCII parsed UTC time hhmmss
+     */
+    byte utc[6];
+
+    /**
+     * <b>gps_fix</b>
+     * <b><p>Summary:</b></p>After parsing nmea, will equal 1 when GPS fix is valid
+     * and 0 otherwise
+     */
+    byte fix;
+} gps_t;
+
+typedef gps_t gps;
 
 /**
  * <p><b>nmea_parser</b></p>
  * <p><b>Summary:</b></p> Start a NMEA sentence read from EUSART.
  * <p><b>Precondition:</b></p>Call EUSART module init before using
  */
-void nmea_parser();
-void nmea_parse_gpgga();
-void nmea_parse_gpvtg();
+void nmea_parser(void);
+void nmea_parse_gpgga(void);
+void nmea_parse_gpvtg(void);
+gps nmea_get_gps_data(void);
 
 // Comment a function and leverage automatic documentation with slash star star
 /**
