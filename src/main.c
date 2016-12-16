@@ -71,16 +71,13 @@ void main(void) {
 
     INTERRUPT_GlobalInterruptEnable();
     INTERRUPT_PeripheralInterruptEnable();
-
-    memset(gps_speed, NULL, 4);
-    memset(gps_utc, NULL, 4);
-    
+  
     while (1) {
 #ifdef SIM_ON
         TMR2_ISR();
 #endif
 #ifndef SIM_ON
-//        nmea_parser();
+        nmea_parser();
 #endif
     }
 
