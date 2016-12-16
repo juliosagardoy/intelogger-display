@@ -42,6 +42,7 @@ display_digit(byte ch, const byte *n) {
      * 1    0   DISP_C3
      * 1    1   DISP_C4
      */
+    display_encode(0x00);
     switch (ch) {
         case 0: /* Hour higher cypher */
             LATBbits.LATB4 = 0;
