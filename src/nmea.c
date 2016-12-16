@@ -8,6 +8,13 @@
 #include "nmea.h"
 #include "usart.h"
 
+gps gps_data;
+
+gps nmea_get_gps_data()
+{
+    return gps_data;
+}
+
 void nmea_parser() {
     /* Refresh GPS */
     if (EUSART_Read_1Byte_NONBL() != '$') /* Found GPS start bit */ {
@@ -33,7 +40,7 @@ void nmea_parse_gpgga() {
     EUSART_Read_1Byte(); /* Discard ',' */
     /* Read next fixed 6 characters: hhmmss */
     for (i = 0; i < 6; i++)
-        gps_utc[i] = EUSART_Read_1Byte();
+        gps_data.utc[i] = EUSART_Read_1Byte();
     /* Discard uninteresting X parameters by counting 5 commas */
     do {
         if (EUSART_Read_1Byte() == ',')
@@ -41,9 +48,9 @@ void nmea_parse_gpgga() {
     } while (c < 5);
     /* Next param is GPS fix valid */
     if (EUSART_Read_1Byte() == '1')
-        gps_fix = 1;
+        gps_data.fix = 1;
     else
-        gps_fix = 0;
+        gps_data.fix = 0;
 }
 
 void nmea_parse_gpvtg() {
@@ -61,5 +68,5 @@ void nmea_parse_gpvtg() {
     /* Read speed (km/h) param. Discard at decimal separator '.' */
     i = 0;
     while (EUSART_Read_1Byte() != '.')
-        gps_speed[i++] = EUSART_Read_1Byte();
+        gps_data.speed[i++] = EUSART_Read_1Byte();
 }
