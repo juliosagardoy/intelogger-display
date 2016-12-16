@@ -12,7 +12,7 @@
 #include "nmea.h"
 
 static time_t uptime_s; /* time_t in seconds, from time.h */
-static volatile byte active_digit; /* Stores below enum 0,1,2,3 active 7-seg digit */
+static volatile byte active_digit; /* Active 7-seg digit: 0MSD - 3LSB */
 byte c_digits[4] = {'-', '-', '-', '-'};
 
 /** 
@@ -37,11 +37,11 @@ init_tmr6() {
  */
 static void
 init_tmr4() {
-    /* Configure overflow:cy=1MHz; Tcy=1us; incTMR=Tcy/2--------------------TPOOPOOODD
+    /* Configure overflow:cy=1MHz; Tcy=1us; incTMR=Tcy/2
      * 1us * 4presc = 4us/tick 
      * 4us/tick * 256 = 1,024 ms to overflow
      */
-    T4CONbits.T4CKPS = 0b01; /* Prescaler @ 1:64 */
+    T4CONbits.T4CKPS = 0b01; /* Prescaler @ 1:2 */
     PIE3bits.TMR4IE = 1;
 
     T4CONbits.TMR4ON = 1;
@@ -119,26 +119,19 @@ void TMR6_ISR() {
         display_digit(active_digit, &c_digits[active_digit]);
 
     else if (display_mode == 2) {
-#ifdef SIM_ON
-        gps_speed[0] = '1';
-        gps_speed[1] = '2';
-        gps_speed[2] = '0';
-        gps_speed[3] = 0x00;
-#endif
-
         /* Speed display will be aligned to the right of the display.  
          * The following takes the length of speed sentence into account */
         /* Speed between 0 and 9 kmh */
-        if (strlen(gps_speed) == 1 && active_digit == 4)
-            display_digit(active_digit, &gps_speed[0]);
+        if (strlen(nmea_get_gps_data().speed) == 1 && active_digit == 4)
+            display_digit(active_digit, &nmea_get_gps_data().speed[0]);
             /* Speed between 10 and 99 kmh */
-        else if (strlen(gps_speed) == 2 \
+        else if (strlen(nmea_get_gps_data().speed) == 2 \
                 && (active_digit == 3 || active_digit == 4))
-            display_digit(active_digit, &gps_speed[active_digit - 3]);
+            display_digit(active_digit, &nmea_get_gps_data().speed[active_digit - 3]);
             /* Speed between 100 kmh and 999 kmh :) */
-        else if (strlen(gps_speed) == 3 \
-                && (active_digit == 2) || active_digit == 3 || active_digit == 4)
-            display_digit(active_digit, &gps_speed[active_digit - 2]);
+        else if (strlen(nmea_get_gps_data().speed) == 3 \
+                && (active_digit == 2 || active_digit == 3 || active_digit == 4))
+            display_digit(active_digit, &nmea_get_gps_data().speed[active_digit - 2]);
         else
             display_digit(active_digit, "");
     }
