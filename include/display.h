@@ -12,6 +12,7 @@
 #include "Globals.h"
 #include "nmea.h"
 
+
 static volatile byte active_digit; /* Active 7-seg digit: 0MSD - 3LSB */
 byte c_digits[4] = {'-', '-', '-', '-'};
 
