@@ -5,14 +5,13 @@
  * Revision history: 1
  */
 
-#include <string.h>
-
 #include "configBytes.h"
 #include "Globals.h"
+#include "irq_manager.h"
 #include "timeControl.h"
 #include "switches.h"
+#include "pwm.h"
 #include "display.h"
-#include "irq_manager.h"
 #include "usart.h"
 #include "nmea.h"
 
@@ -61,7 +60,7 @@ init_mcu() {
 }
 
 void main(void) {
-
+    display_mode = 1;
     init_osc();
     init_mcu();
     init_tmr6();

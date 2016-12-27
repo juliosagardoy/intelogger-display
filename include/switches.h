@@ -8,6 +8,8 @@
 #ifndef SWITCHES_H
 #define	SWITCHES_H
 
+#include "Globals.h"
+
 void SW1_ISR();
 void SW2_ISR();
 void SW3_ISR();

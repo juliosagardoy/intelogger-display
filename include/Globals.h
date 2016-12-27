@@ -11,8 +11,8 @@
 #include <xc.h>
 #include <stddef.h>
 #include <stdint.h>        /* For uintX_t definition */
-#include <string.h>
-#include <stdio.h>
+
+//#include <stdio.h>
 
 /*--------------------------------------------------------------------------------------------------
                                           Constants
@@ -41,7 +41,7 @@ typedef uint16_t    word;
 /**
  * 
  */
-volatile byte display_mode = 1; /* Display mode: 1-clock 2-speed */
+volatile byte display_mode; /* Display mode: 1-clock 2-speed 3-temp 4- */
 
 #endif	/* GLOBALS_H */
 

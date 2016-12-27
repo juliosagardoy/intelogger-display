@@ -9,6 +9,11 @@
 #define	IRQ_MANAGER_H
 
 #include "Globals.h"
+#include "usart.h"
+#include "pwm.h"
+#include "timeControl.h"
+#include "display.h"
+#include "switches.h"
 
 inline void INTERRUPT_GlobalInterruptEnable(void);
 inline void INTERRUPT_GlobalInterruptDisable(void);

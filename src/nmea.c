@@ -6,7 +6,7 @@
  */
 
 #include "nmea.h"
-#include "usart.h"
+
 
 gps gps_data;
 

@@ -5,7 +5,6 @@
  * Revision history: 1
  */
 
-#include "Globals.h"
 #include "display.h"
 
 /* 7seg: a dp b c d e f g 
@@ -26,6 +25,30 @@
 #define _dash 0b11111110;
 #define _dp 0b10111111;
 #define _null 0b11111111;
+
+/** 
+ * Timer6 for display refresh events --> around 10ms/100Hz
+ */
+void
+init_tmr6() {
+    active_digit = 0;
+
+    /* Configure overflow: Fcy=1MHz; Tcy=1us; incTMR=Tcy/2
+     * 1us * 5 * 4 = 24us per tick */
+    T6CONbits.T6CKPS = 0b01; // Prescaler @ 1:4
+    T6CONbits.T6OUTPS = 0b0001; // Postscaler @ 1:2
+
+    TMR6 = 0; // Then irq ea. 256*8us = 2048us (*4 char = 122Hz)
+    PIE3bits.TMR6IE = 1;
+    T6CONbits.TMR6ON = 1;
+}
+
+static void incr_active_digit() {
+    if (active_digit < 3)
+        active_digit++;
+    else
+        active_digit = 0;
+}
 
 /**
  * Sends uint8_t n to designed 7-segment digit ch
@@ -117,3 +140,33 @@ display_encode(const uint8_t* n) {
     }
 }
 
+/* Overflow every 15 ms! 65Hz*/
+void TMR6_ISR() {
+    TMR6 = 6;
+
+    /* At each iteration, switch active digit */
+    incr_active_digit();
+
+    if (display_mode == 1)
+        display_digit(active_digit, &c_digits[active_digit]);
+
+    else if (display_mode == 2) {
+        /* Speed display will be aligned to the right of the display.  
+         * The following takes the length of speed sentence into account */
+        /* Speed between 0 and 9 kmh */
+        if (strlen(nmea_get_gps_data().speed) == 1 && active_digit == 4)
+            display_digit(active_digit, &nmea_get_gps_data().speed[0]);
+            /* Speed between 10 and 99 kmh */
+        else if (strlen(nmea_get_gps_data().speed) == 2 \
+                && (active_digit == 3 || active_digit == 4))
+            display_digit(active_digit, &nmea_get_gps_data().speed[active_digit - 3]);
+            /* Speed between 100 kmh and 999 kmh :) */
+        else if (strlen(nmea_get_gps_data().speed) == 3 \
+                && (active_digit == 2 || active_digit == 3 || active_digit == 4))
+            display_digit(active_digit, &nmea_get_gps_data().speed[active_digit - 2]);
+        else
+            display_digit(active_digit, "");
+    }
+
+    PIR3bits.TMR6IF = 0;
+}

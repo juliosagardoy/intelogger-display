@@ -7,6 +7,7 @@
 
 #include "Globals.h"
 #include "timeControl.h"
+#include "pwm.h"
 
 void SW1_ISR()	/* "H" sw pushed */
 {

@@ -10,14 +10,9 @@
 #ifndef NMEA_H
 #define	NMEA_H
 
-#include <xc.h> // include processor files - each processor file is guarded.  
+#include <string.h>
 #include "Globals.h"
-
-// TODO Insert appropriate #include <>
-
-// TODO Insert C++ class definitions if appropriate
-
-// TODO Insert declarations
+#include "usart.h"
 
 typedef struct {
     /**
