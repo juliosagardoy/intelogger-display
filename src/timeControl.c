@@ -13,13 +13,14 @@
 
 static time_t uptime_s; /* time_t in seconds, from time.h */
 static volatile byte active_digit; /* Active 7-seg digit: 0MSD - 3LSB */
-byte c_digits[4] = {'-', '-', '-', '-'};
+volatile byte c_digits[4] = {'-', '-', '-', '-'};
 
 /** 
  * Timer6 for display refresh events --> around 10ms/100Hz
  */
 void
-init_tmr6() {
+init_tmr6()
+{
     active_digit = 0;
 
     /* Configure overflow: Fcy=1MHz; Tcy=1us; incTMR=Tcy/2
@@ -36,14 +37,16 @@ init_tmr6() {
  * Init timer4 for CCP4 module (PWM)
  */
 static void
-init_tmr4() {
+init_tmr4()
+{
     /* Configure overflow:cy=1MHz; Tcy=1us; incTMR=Tcy/2
-     * 1us * 4presc = 4us/tick 
-     * 4us/tick * 256 = 1,024 ms to overflow
+     * 1us * 2presc = 2us/tick 
+     * 2us/tick * 256 = 512 us to overflow
      */
     T4CONbits.T4CKPS = 0b01; /* Prescaler @ 1:2 */
-    PIE3bits.TMR4IE = 1;
+    PIE3bits.TMR4IE = 0;
 
+    TMR4 = 0;
     T4CONbits.TMR4ON = 1;
 }
 
@@ -51,14 +54,16 @@ init_tmr4() {
  * Timer 2 for clock
  */
 void
-init_tmr2() {
+init_tmr2()
+{
     uptime_s = 0x00;
 
     /* Configure overflow: Fcy=1MHz; Tcy=1us; incTMR=Tcy
-     * 0.5us * 64 * 10 = 20 us per tick */
+     * 1us * 1 * 10 = 10 us per tick */
     T2CONbits.T2CKPS = 0b11; // Prescaler @ 1:64
+    T2CONbits.T2CKPS = 0b00; // Prescaler @ 1:64
     T2CONbits.T2OUTPS = 0b1001; // Postscaler @ 1:10
-    TMR2 = 6; // Preload at 6, then irq ea. (2^8-6)*20 us = 5ms
+    TMR2 = 6; // Preload at 6, then irq ea. (2^8-6)*2,5 us = 500us
     PIE1bits.TMR2IE = 1;
     T2CONbits.TMR2ON = 1;
 }
@@ -67,41 +72,48 @@ init_tmr2() {
  * CCP module
  */
 void
-init_ccp() {
+init_ccp()
+{
     TRISBbits.TRISB0 = 1; /* Temporarily disable output to avoid glitches */
     CCPTMRS0bits.C4TSEL = 0b01; /* CCP4 is based off Timer4 in PWM mode */
-    PR4 = 256; /* PWM Period = TMR4 till ovf = 0.001024 s */
+    PR4 = 256; /* PWM Period = TMR4 till ovf */
 
-    /* Select duty cycle 2-MSb (10) and PWM mode (11xx) */
+    /* Select duty cycle 2-MSb and PWM mode (11xx) */
     //CCP4CON = 0b101100;
+    //CCP4CON = 0b111100;
     CCP4CON = 0b111100;
     /* 2 LSb in CCP4CON */
-    //CCPR4L = 0b000000; /* duty cycle 8-MSb */
-    CCPR4L = 0b111111; /* duty cycle 8-MSb */
+    CCPR4L = 0b000100; /* duty cycle 8-MSb */
+    //CCPR4L = 0b111111; /* duty cycle 8-MSb */
     init_tmr4();
-    
-    TMR4 = 0;
-    PIE3bits.CCP4IE = 1;
+
+    PIE3bits.CCP4IE = 0;
     TRISBbits.TRISB0 = 0;
 }
 
-void incr_uptime(time_t s) {
+void incr_uptime(time_t s)
+{
     uptime_s += s;
 }
 
-byte Toggle_Brightess(void) {
-    if (CCPR4L < 0b100000) {
+byte Toggle_Brightess(void)
+{
+    if (CCPR4L < 0b100000)
+    {
         CCP4CON = 0b111100;
         CCPR4L = 0b111111; /* Make bright again - DC=100% */
         return 1;
-    } else {
+    }
+    else
+    {
         CCP4CON = 0b101100;
         CCPR4L = 0b000000; /* Cut DC to 50% */
         return 0;
     }
 }
 
-static void incr_active_digit() {
+static void incr_active_digit()
+{
     if (active_digit < 3)
         active_digit++;
     else
@@ -109,7 +121,8 @@ static void incr_active_digit() {
 }
 
 /* Overflow every 15 ms! 65Hz*/
-void TMR6_ISR() {
+void TMR6_ISR()
+{
     TMR6 = 6;
 
     /* At each iteration, switch active digit */
@@ -118,7 +131,8 @@ void TMR6_ISR() {
     if (display_mode == 1)
         display_digit(active_digit, &c_digits[active_digit]);
 
-    else if (display_mode == 2) {
+    else if (display_mode == 2)
+    {
         /* Speed display will be aligned to the right of the display.  
          * The following takes the length of speed sentence into account */
         /* Speed between 0 and 9 kmh */
@@ -140,8 +154,10 @@ void TMR6_ISR() {
 }
 
 /** Overflow every 5ms! */
-void TMR2_ISR() {
-    static byte tmr6_ovf1 = 0; /* Counter for Timer6 overflow */
+void TMR2_ISR()
+{
+    static byte tmr2_ovf1 = 0; /* Counter for Timer6 overflow */
+    static byte tmr2_ovf2 = 0; /* Counter for Timer6 overflow */
     byte tmp[2];
 
 #ifdef SIM_ON       /* Simulate call to TMR6_ISR after 15ms */
@@ -153,40 +169,50 @@ void TMR2_ISR() {
     TMR2 = 6;
 
     /* Clock clocking */
-    if (tmr6_ovf1++ >= 200) // 5ms*200 = 1 s have passed
+    if (tmr2_ovf1++ >= 200) // 500us*200 = 0,1 s have passed
     {
-        tmr6_ovf1 = 0;
-        uptime_s++; /* Increase clock by one second */
+        tmr2_ovf1 = 0;
+        if (tmr2_ovf2++ >= 10)
+        {
+            tmr2_ovf2 = 0;
+            uptime_s++; /* Increase clock by one second */
 
-        tp = gmtime(&uptime_s); /* Re-populates tm time.h struct */
+            tp = gmtime(&uptime_s); /* Re-populates tm time.h struct */
 
-        /* DIRTY Workaround to fix itoa output when number is only one cypher. */
-        if (tp->tm_sec < 10) {
-            itoa(tmp, tp->tm_sec, 10);
-            c_digits[3] = tmp[0];
-            c_digits[2] = '0';
-        } else {
-            itoa(tmp, tp->tm_sec, 10);
-            c_digits[3] = tmp[1];
-            c_digits[2] = tmp[0];
+            /* DIRTY Workaround to fix itoa output when number is only one cypher. */
+            if (tp->tm_sec < 10)
+            {
+                itoa(tmp, tp->tm_sec, 10);
+                c_digits[3] = tmp[0];
+                c_digits[2] = '0';
+            }
+            else
+            {
+                itoa(tmp, tp->tm_sec, 10);
+                c_digits[3] = tmp[1];
+                c_digits[2] = tmp[0];
+            }
+            if (tp->tm_hour < 10)
+            {
+                itoa(tmp, tp->tm_hour, 10);
+                c_digits[1] = tmp[0];
+                c_digits[0] = '0';
+            }
+            else
+                itoa(c_digits, tp->tm_hour, 10);
+            /* END of DIRTY */
         }
-        if (tp->tm_hour < 10) {
-            itoa(tmp, tp->tm_hour, 10);
-            c_digits[1] = tmp[0];
-            c_digits[0] = '0';
-        } else
-            itoa(c_digits, tp->tm_hour, 10);
-        /* END of DIRTY */
     }
-
     PIR1bits.TMR2IF = 0;
 }
 
-void TMR4_ISR() {
+void TMR4_ISR()
+{
     PIR3bits.TMR4IF = 0;
 
 }
 
-void CCP4_ISR() {
+void CCP4_ISR()
+{
     PIR3bits.CCP4IF = 0;
 }

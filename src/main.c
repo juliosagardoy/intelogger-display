@@ -55,9 +55,9 @@ init_mcu() {
     ANSELBbits.ANSB1 = 0; // Select Digital
     ANSELBbits.ANSB2 = 0; // Select Digital
     ANSELBbits.ANSB3 = 0; // Select Digital
-    IOCBNbits.IOCBN1 = 1; /* Enable interrupt-on-change negative edge */
-    IOCBNbits.IOCBN2 = 1;
-    IOCBNbits.IOCBN3 = 1;
+//    IOCBNbits.IOCBN1 = 1; /* Enable interrupt-on-change negative edge */
+//    IOCBNbits.IOCBN2 = 1;
+//    IOCBNbits.IOCBN3 = 1;
 }
 
 void main(void) {
@@ -77,7 +77,7 @@ void main(void) {
         TMR2_ISR();
 #endif
 #ifndef SIM_ON
-        nmea_parser();
+        //nmea_parser();
 #endif
     }
 

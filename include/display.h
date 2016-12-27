@@ -13,7 +13,7 @@ extern "C" {
 #endif
 
     void display_encode(const byte*);
-    void display_digit(byte, const byte*);
+    void display_digit(byte, byte*);
 
 #ifdef	__cplusplus
 }

@@ -33,7 +33,7 @@
  * @arg uint8_t
  */
 void
-display_digit(byte ch, const byte *n) {
+display_digit(byte ch, byte *n) {
     /* MUX channel assign 
      * B    A   Channel
      * RB5  RB4
