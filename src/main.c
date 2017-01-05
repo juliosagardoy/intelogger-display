@@ -18,7 +18,7 @@
 static void
 init_osc() {
     OSCCON = 0b01101000; /* 01101000 PLL OFF,4MHz INTOSC, OSC defined in ConfBytes */
-
+ 
     OSCTUNE = 0x00;
 }
 
@@ -33,9 +33,12 @@ init_mcu() {
 
     /* 7-SEG ports direction config */
     TRISA = 0x00;
-    LATA = 0xFF;    // All on = all led off
+    TRISCbits.TRISC0 = 0;
+    TRISCbits.TRISC1 = 0;
+    LATA |= 0b111111;    // All on = all led off
+    LATC |= 0b11;
     ANSELA = 0x00;  // All Digital
-
+    
     /* PWM generator */
     ANSELBbits.ANSB0 = 0;   // Select Digital
     /* ...Done at init_ccp... */
@@ -63,7 +66,7 @@ void main(void) {
     display_mode = 1;
     init_osc();
     init_mcu();
-    init_tmr6();
+    init_display();
     init_tmr2();
     init_ccp();
     init_eusart();
@@ -76,7 +79,7 @@ void main(void) {
         TMR2_ISR();
 #endif
 #ifndef SIM_ON
-        //nmea_parser();
+        nmea_parser();
 #endif
     }
 
