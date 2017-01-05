@@ -101,60 +101,46 @@ void
 display_encode(const uint8_t* n) {
     switch (*n) {
         case '0':
-            LATA |= 0b000001;
-            LATC |= 0b01;
+            LATA = _0;
             break;
         case '1':
-            LATA |= 0b001111;
-            LATC |= 0b11;
+            LATA = _1;
             break;
         case '2':
-            LATA |= 0b010010;
-            LATC |= 0b01;
+            LATA = _2;
             break;
         case '3':
-            LATA |= 0b000110;
-            LATC |= 0b01;
+            LATA = _3;
             break;
         case '4':
-            LATA |= 0b001100;
-            LATC |= 0b11;
+            LATA = _4;
             break;
         case '5':
-            LATA |= 0b100100;
-            LATC |= 0b01;
+            LATA = _5;
             break;
         case '6':
-            LATA |= 0b100000;
-            LATC |= 0b01;
+            LATA = _6;
             break;
         case '7':
-            LATA |= 0b001101;
-            LATC |= 0b01;
+            LATA = _7;
             break;
         case '8':
-            LATA |= 0b000000;
-            LATC |= 0b01;
+            LATA = _8;
             break;
         case '9':
-            LATA |= 0b000100;
-            LATC |= 0b01;
+            LATA = _9;
             break;
         case '.':
-            LATA |= 0b111111;
-            LATC |= 0b11;
+            LATA = _dash;
             break;
         case '-':
-            LATA |= 0b111110;
-            LATC |= 0b11;
+            LATA = _dash;
             break;
         case 'e':
-            LATA |= 0b110000;
-            LATC |= 0b00;
+            LATA = _E;
             break;
         default:
-            LATA |= 0b111111;
-            LATC |= 0b11;
+            LATA = _null;
             break;
     }
 }

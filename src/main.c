@@ -33,10 +33,7 @@ init_mcu() {
 
     /* 7-SEG ports direction config */
     TRISA = 0x00;
-    TRISCbits.TRISC0 = 0;
-    TRISCbits.TRISC1 = 0;
-    LATA |= 0b111111;    // All on = all led off
-    LATC |= 0b11;
+    LATA |= 0b11111111;    // All on = all led off
     ANSELA = 0x00;  // All Digital
     
     /* PWM generator */
