@@ -5,19 +5,20 @@
  * Revision history: 1
  */
 
-#ifndef LED_DECODER_H
-#define	LED_DECODER_H
+#ifndef DISPLAY_H
+#define	DISPLAY_H
 
 #include <string.h>
 #include "Globals.h"
 #include "nmea.h"
 
-
-static volatile byte active_digit; /* Active 7-seg digit: 0MSD - 3LSB */
-byte c_digits[4] = {'-', '-', '-', '-'};
+volatile byte digit_en; /* Active 7-seg digit: 0MSD - 3LSB */
+byte digits[4];
 
 void display_encode(const byte*);
 void display_digit(byte, const byte*);
+
+void init_display(void);
 
 /**
  * Init timer6 to overflow every 10ms
