@@ -14,24 +14,25 @@ void init_eusart() {
 
     // Set the EUSART module to the options selected in the user interface.
 
-    // ABDEN disabled; WUE disabled; RCIDL idle; ABDOVF no_overflow; SCKP async_noninverted_sync_fallingedge; BRG16 16bit_generator;
-    BAUDCON = 0x48;
+    // ABDEN disabled; WUE disabled; RCIDL idle; ABDOVF no_overflow; SCKP async_noninverted_sync_fallingedge; BRG8 8bit_generator;
+    BAUDCON = 0b01000000;
 
     // ADDEN disabled; RX9 8-bit; RX9D 0x0; FERR no_error; CREN enabled; SPEN enabled; SREN disabled; OERR no_error;
-    RCSTA = 0x90;
-
+    //RCSTA = 0x90;
+    RCSTA = 0b10010000;
+    
     // CSRC slave_mode; TRMT TSR_empty; TXEN enabled; BRGH hi_speed; SYNC asynchronous; SENDB sync_break_complete; TX9D 0x0; TX9 8-bit;
-    TXSTA = 0x26;
+    TXSTA = 0b00100110;
 
     // Baud Rate = 115200; SPBRGL 34;
     //SPBRGL = 0x22;
     // Baud Rate = 57600; SPBRGL 16;
     //SPBRGL = 16;
     // Baud Rate = 19200; SPBRGL 51;
-    SPBRGL = 51;
-
+    SPBRGL = 25;
+    SPBRGH = 1;
     // Baud Rate = 115200; SPBRGH 0;
-    SPBRGH = 0x00;
+    //SPBRGH = 0x00;
 
 
     // initializing the driver state
@@ -45,8 +46,9 @@ void init_eusart() {
 
     EUSART_PurgeBuffer();
 
-    // enable receive interrupt
+    // enable interrupt
     PIE1bits.RCIE = 1;
+    PIE1bits.TXIE = 1;
 }
 
 /*
@@ -76,6 +78,7 @@ uint8_t EUSART_Read_1Byte(void) {
 uint8_t EUSART_Read_1Byte_NONBL(void) {
     uint8_t readValue = 0;
 
+    /* Next comment makes non-blocking */
     //    while(0 == eusartRxCount)
     //    {
     //    }
@@ -111,7 +114,7 @@ void EUSART_Write_1Byte(byte txData) {
         PIE1bits.TXIE = 0;
         eusartTxBuffer[eusartTxHead++] = txData;
         if (sizeof (eusartTxBuffer) <= eusartTxHead) {
-            eusartTxHead = 0;
+          eusartTxHead = 0;
         }
         eusartTxBufferRemaining--;
     }
