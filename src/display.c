@@ -26,12 +26,17 @@
 #define _dp 0b10111111;
 #define _null 0b11111111;
 
+void init_display() {
+    memset(digits, '-', 4);
+    init_tmr6();
+}
+
 /** 
  * Timer6 for display refresh events --> around 10ms/100Hz
  */
 void
 init_tmr6() {
-    active_digit = 0;
+    digit_en = 0;
 
     /* Configure overflow: Fcy=1MHz; Tcy=1us; incTMR=Tcy/2
      * 1us * 5 * 4 = 24us per tick */
@@ -43,11 +48,11 @@ init_tmr6() {
     T6CONbits.TMR6ON = 1;
 }
 
-static void incr_active_digit() {
-    if (active_digit < 3)
-        active_digit++;
+static void incr_digit_en() {
+    if (digit_en < 3)
+        digit_en++;
     else
-        active_digit = 0;
+        digit_en = 0;
 }
 
 /**
@@ -56,7 +61,7 @@ static void incr_active_digit() {
  * @arg uint8_t
  */
 void
-display_digit(byte ch, byte *n) {
+display_digit(byte ch, const byte *n) {
     /* MUX channel assign 
      * B    A   Channel
      * RB5  RB4
@@ -90,52 +95,66 @@ display_digit(byte ch, byte *n) {
 /**
  * Puts an ASCII char (byte) to its correspondent 7-segment equivalent and
  * sends it to the mux
- * @param n ASCII char. Only admits numbers, otherwise E. will be put
+ * @param n ASCII char. Only admits numbers, otherwise nothing will be put
  */
 void
 display_encode(const uint8_t* n) {
     switch (*n) {
         case '0':
-            LATA = _0;
+            LATA |= 0b000001;
+            LATC |= 0b01;
             break;
         case '1':
-            LATA = _1;
+            LATA |= 0b001111;
+            LATC |= 0b11;
             break;
         case '2':
-            LATA = _2;
+            LATA |= 0b010010;
+            LATC |= 0b01;
             break;
         case '3':
-            LATA = _3;
+            LATA |= 0b000110;
+            LATC |= 0b01;
             break;
         case '4':
-            LATA = _4;
+            LATA |= 0b001100;
+            LATC |= 0b11;
             break;
         case '5':
-            LATA = _5;
+            LATA |= 0b100100;
+            LATC |= 0b01;
             break;
         case '6':
-            LATA = _6;
+            LATA |= 0b100000;
+            LATC |= 0b01;
             break;
         case '7':
-            LATA = _7;
+            LATA |= 0b001101;
+            LATC |= 0b01;
             break;
         case '8':
-            LATA = _8;
+            LATA |= 0b000000;
+            LATC |= 0b01;
             break;
         case '9':
-            LATA = _9;
+            LATA |= 0b000100;
+            LATC |= 0b01;
             break;
         case '.':
-            LATA = _dp;
+            LATA |= 0b111111;
+            LATC |= 0b11;
             break;
         case '-':
-            LATA = _dash ;
+            LATA |= 0b111110;
+            LATC |= 0b11;
             break;
         case 'e':
-            LATA = _E;
+            LATA |= 0b110000;
+            LATC |= 0b00;
             break;
         default:
-            LATA = _null;
+            LATA |= 0b111111;
+            LATC |= 0b11;
             break;
     }
 }
@@ -145,27 +164,27 @@ void TMR6_ISR() {
     TMR6 = 6;
 
     /* At each iteration, switch active digit */
-    incr_active_digit();
+    incr_digit_en();
 
     if (display_mode == 1)
-        display_digit(active_digit, &c_digits[active_digit]);
+        display_digit(digit_en, &digits[digit_en]);
 
     else if (display_mode == 2) {
         /* Speed display will be aligned to the right of the display.  
          * The following takes the length of speed sentence into account */
         /* Speed between 0 and 9 kmh */
-        if (strlen(nmea_get_gps_data().speed) == 1 && active_digit == 4)
-            display_digit(active_digit, &nmea_get_gps_data().speed[0]);
+        if (strlen(nmea_get_gps_data().speed) == 1 && digit_en == 4)
+            display_digit(digit_en, &nmea_get_gps_data().speed[0]);
             /* Speed between 10 and 99 kmh */
         else if (strlen(nmea_get_gps_data().speed) == 2 \
-                && (active_digit == 3 || active_digit == 4))
-            display_digit(active_digit, &nmea_get_gps_data().speed[active_digit - 3]);
+                && (digit_en == 3 || digit_en == 4))
+            display_digit(digit_en, &nmea_get_gps_data().speed[digit_en - 3]);
             /* Speed between 100 kmh and 999 kmh :) */
         else if (strlen(nmea_get_gps_data().speed) == 3 \
-                && (active_digit == 2 || active_digit == 3 || active_digit == 4))
-            display_digit(active_digit, &nmea_get_gps_data().speed[active_digit - 2]);
+                && (digit_en == 2 || digit_en == 3 || digit_en == 4))
+            display_digit(digit_en, &nmea_get_gps_data().speed[digit_en - 2]);
         else
-            display_digit(active_digit, "");
+            display_digit(digit_en, "");
     }
 
     PIR3bits.TMR6IF = 0;
