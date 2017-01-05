@@ -7,8 +7,7 @@
 
 #include "nmea.h"
 
-
-gps gps_data;
+static gps gps_data;
 
 gps nmea_get_gps_data()
 {
@@ -17,7 +16,7 @@ gps nmea_get_gps_data()
 
 void nmea_parser() {
     /* Refresh GPS */
-    if (EUSART_Read_1Byte_NONBL() != '$') /* Found GPS start bit */ {
+    if (EUSART_Read_1Byte_NONBL() == '$') /* Found GPS start bit */ {
         /* Read NMEA sentence header (5 chars string) */
         byte nmea_header[5];
         memset(nmea_header, 0x00, 5);
